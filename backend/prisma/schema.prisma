@@ -1,0 +1,433 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// ==================== TENANTS ====================
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  subdomain String   @unique
+  logoUrl   String?
+  settings  String   @default("{}")  // JSON string
+  timezone  String   @default("UTC")
+  currency  String   @default("USD")
+  country   String?
+  status    String   @default("active") // active, suspended, cancelled
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users             User[]
+  employees         Employee[]
+  departments       Department[]
+  designations      Designation[]
+  shifts            Shift[]
+  leaveTypes        LeaveType[]
+  leavePolicies     LeavePolicy[]
+  leaveRequests     LeaveRequest[]
+  holidays          Holiday[]
+  attendanceRecords AttendanceRecord[]
+  salaryStructures  SalaryStructure[]
+  payrollRuns       PayrollRun[]
+  payslips          Payslip[]
+  documents         Document[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  subscription      Subscription?
+
+  @@map("tenants")
+}
+
+// ==================== USERS (AUTH) ====================
+model User {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  email               String
+  passwordHash        String
+  role                String    @default("employee") // super_admin, company_admin, hr_manager, manager, employee
+  isActive            Boolean   @default(true)
+  isVerified          Boolean   @default(false)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  refreshTokenHash    String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  employee      Employee?
+  notifications Notification[]
+  auditLogs     AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, role])
+  @@map("users")
+}
+
+// ==================== EMPLOYEES ====================
+model Employee {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  userId             String?   @unique
+  employeeCode       String
+  firstName          String
+  lastName           String
+  email              String
+  phone              String?
+  dateOfBirth        DateTime?
+  gender             String?   // male, female, other
+  address            String?
+  city               String?
+  state              String?
+  country            String?
+  zipCode            String?
+  departmentId       String?
+  designationId      String?
+  reportingManagerId String?
+  salaryStructureId  String?
+  shiftId            String?
+  dateOfJoining      DateTime
+  dateOfLeaving      DateTime?
+  employmentType     String    @default("full_time") // full_time, part_time, contract, intern
+  status             String    @default("active")    // active, probation, on_leave, terminated, resigned
+  profilePhotoUrl    String?
+  emergencyContact   String    @default("{}") // JSON
+  bankDetails        String    @default("{}") // JSON
+  customFields       String    @default("{}") // JSON
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  tenant           Tenant             @relation(fields: [tenantId], references: [id])
+  user             User?              @relation(fields: [userId], references: [id])
+  department       Department?        @relation("EmployeeDepartment", fields: [departmentId], references: [id])
+  designation      Designation?       @relation(fields: [designationId], references: [id])
+  reportingManager Employee?          @relation("ManagerRelation", fields: [reportingManagerId], references: [id])
+  subordinates     Employee[]         @relation("ManagerRelation")
+  salaryStructure  SalaryStructure?   @relation(fields: [salaryStructureId], references: [id])
+  shift            Shift?             @relation(fields: [shiftId], references: [id])
+  attendance       AttendanceRecord[]
+  leaveRequests    LeaveRequest[]
+  payslips         Payslip[]
+  documents        Document[]
+  headOfDepts      Department[]       @relation("DepartmentHead")
+
+  @@unique([tenantId, employeeCode])
+  @@unique([tenantId, email])
+  @@index([tenantId, departmentId])
+  @@index([tenantId, status])
+  @@map("employees")
+}
+
+// ==================== DEPARTMENTS ====================
+model Department {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  code        String?
+  description String?
+  headId      String?
+  parentId    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  tenant    Tenant      @relation(fields: [tenantId], references: [id])
+  head      Employee?   @relation("DepartmentHead", fields: [headId], references: [id])
+  parent    Department? @relation("DeptHierarchy", fields: [parentId], references: [id])
+  children  Department[] @relation("DeptHierarchy")
+  employees Employee[]  @relation("EmployeeDepartment")
+
+  @@unique([tenantId, name])
+  @@map("departments")
+}
+
+// ==================== DESIGNATIONS ====================
+model Designation {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  level     Int      @default(1)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  employees Employee[]
+
+  @@unique([tenantId, name])
+  @@map("designations")
+}
+
+// ==================== SHIFTS ====================
+model Shift {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  startTime    String   // "09:00"
+  endTime      String   // "18:00"
+  graceMinutes Int      @default(15)
+  isDefault    Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  employees Employee[]
+
+  @@unique([tenantId, name])
+  @@map("shifts")
+}
+
+// ==================== ATTENDANCE ====================
+model AttendanceRecord {
+  id                    String    @id @default(uuid())
+  tenantId              String
+  employeeId            String
+  date                  DateTime
+  checkIn               DateTime?
+  checkOut              DateTime?
+  hoursWorked           Float?
+  status                String    @default("present") // present, absent, late, half_day, holiday, weekend
+  source                String    @default("web")     // web, mobile, biometric
+  ipAddress             String?
+  notes                 String?
+  isRegularized         Boolean   @default(false)
+  regularizationReason  String?
+  createdAt             DateTime  @default(now())
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([tenantId, employeeId, date])
+  @@index([tenantId, date])
+  @@map("attendance_records")
+}
+
+// ==================== LEAVE TYPES ====================
+model LeaveType {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  code      String
+  isPaid    Boolean  @default(true)
+  color     String   @default("#3b82f6")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id])
+  policies LeavePolicy[]
+  requests LeaveRequest[]
+
+  @@unique([tenantId, code])
+  @@map("leave_types")
+}
+
+// ==================== LEAVE POLICIES ====================
+model LeavePolicy {
+  id              String   @id @default(uuid())
+  tenantId        String
+  leaveTypeId     String
+  annualQuota     Float
+  maxCarryForward Float    @default(0)
+  allowNegative   Boolean  @default(false)
+  accrualType     String   @default("yearly") // yearly, monthly, quarterly
+  createdAt       DateTime @default(now())
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([tenantId, leaveTypeId])
+  @@map("leave_policies")
+}
+
+// ==================== LEAVE REQUESTS ====================
+model LeaveRequest {
+  id            String    @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  leaveTypeId   String
+  startDate     DateTime
+  endDate       DateTime
+  days          Float
+  isHalfDay     Boolean   @default(false)
+  reason        String?
+  status        String    @default("pending") // pending, approved, rejected, cancelled
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  reviewComment String?
+  createdAt     DateTime  @default(now())
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([tenantId, employeeId, status])
+  @@index([tenantId, status])
+  @@map("leave_requests")
+}
+
+// ==================== HOLIDAYS ====================
+model Holiday {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  date        DateTime
+  isOptional  Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, date, name])
+  @@map("holidays")
+}
+
+// ==================== SALARY STRUCTURES ====================
+model SalaryStructure {
+  id         String   @id @default(uuid())
+  tenantId   String
+  name       String
+  baseSalary Float
+  allowances String   @default("[]") // JSON array
+  deductions String   @default("[]") // JSON array
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  employees Employee[]
+
+  @@unique([tenantId, name])
+  @@map("salary_structures")
+}
+
+// ==================== PAYROLL RUNS ====================
+model PayrollRun {
+  id              String    @id @default(uuid())
+  tenantId        String
+  month           Int
+  year            Int
+  status          String    @default("draft") // draft, processing, completed, reversed
+  totalEmployees  Int       @default(0)
+  totalGross      Float     @default(0)
+  totalDeductions Float     @default(0)
+  totalNet        Float     @default(0)
+  processedBy     String?
+  processedAt     DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  payslips Payslip[]
+
+  @@unique([tenantId, month, year])
+  @@map("payroll_runs")
+}
+
+// ==================== PAYSLIPS ====================
+model Payslip {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  payrollRunId    String
+  grossSalary     Float
+  earnings        String   // JSON
+  deductionsDetail String  // JSON
+  totalDeductions Float
+  tax             Float    @default(0)
+  netSalary       Float
+  workingDays     Int
+  daysWorked      Float
+  lopDays         Float    @default(0)
+  pdfUrl          String?
+  createdAt       DateTime @default(now())
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id])
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id])
+
+  @@unique([tenantId, employeeId, payrollRunId])
+  @@map("payslips")
+}
+
+// ==================== DOCUMENTS ====================
+model Document {
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+  name       String
+  category   String   @default("other") // id_proof, contract, certificate, resume, other
+  fileUrl    String
+  fileSize   Int
+  mimeType   String
+  uploadedBy String
+  createdAt  DateTime @default(now())
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, employeeId])
+  @@map("documents")
+}
+
+// ==================== NOTIFICATIONS ====================
+model Notification {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info") // info, success, warning, action_required
+  category  String
+  isRead    Boolean  @default(false)
+  actionUrl String?
+  metadata  String   @default("{}") // JSON
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, userId, isRead])
+  @@map("notifications")
+}
+
+// ==================== SUBSCRIPTIONS ====================
+model Subscription {
+  id                   String    @id @default(uuid())
+  tenantId             String    @unique
+  plan                 String    // starter, professional, enterprise
+  status               String    @default("trialing")
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  employeeLimit        Int
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  trialEndsAt          DateTime?
+  cancelledAt          DateTime?
+  createdAt            DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("subscriptions")
+}
+
+// ==================== AUDIT LOGS ====================
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String
+  action     String   // CREATE, UPDATE, DELETE
+  entityType String
+  entityId   String
+  oldValues  String?  // JSON
+  newValues  String?  // JSON
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, entityType, entityId])
+  @@map("audit_logs")
+}

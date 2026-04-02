@@ -1,0 +1,18 @@
+C:\Users\SINGER\Desktop\New folder (2)\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:378
+          throw new PrismaClientInitializationError(
+                ^
+PrismaClientInitializationError: The Driver Adapter `@prisma/adapter-better-sqlite3`, based on `sqlite`, is not compatible with the provider `postgres` specified in the Prisma schema.
+    at new t (C:\Users\SINGER\Desktop\New folder (2)\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:378:17)
+    at Object.<anonymous> (C:\Users\SINGER\Desktop\New folder (2)\backend\prisma\seed.ts:8:16)
+    at Module._compile (node:internal/modules/cjs/loader:1554:14)
+    at Module.m._compile (C:\Users\SINGER\Desktop\New folder (2)\backend\node_modules\ts-node\src\index.ts:1618:23)
+    at node:internal/modules/cjs/loader:1706:10
+    at Object.require.extensions.<computed> [as .ts] (C:\Users\SINGER\Desktop\New folder (2)\backend\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1289:32)
+    at Function._load (node:internal/modules/cjs/loader:1108:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:220:24) {
+  clientVersion: '7.6.0',
+  errorCode: undefined,
+  retryable: undefined
+}
