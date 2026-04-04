@@ -1,5 +1,5 @@
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateEmployeeDto, UpdateEmployeeDto, EmployeeQueryDto } from './dto/employee.dto';
+import { CreateEmployeeDto, UpdateEmployeeDto, EmployeeQueryDto, UpdateEmployeeUserRoleDto } from './dto/employee.dto';
 export declare class EmployeesService {
     private prisma;
     constructor(prisma: PrismaService);
@@ -11,6 +11,10 @@ export declare class EmployeesService {
             totalPages: number;
         };
         items: ({
+            user: {
+                role: string;
+                isActive: boolean;
+            } | null;
             department: {
                 name: string;
                 id: string;
@@ -58,6 +62,10 @@ export declare class EmployeesService {
         })[];
     }>;
     findOne(tenantId: string, id: string): Promise<{
+        user: {
+            role: string;
+            isActive: boolean;
+        } | null;
         department: {
             name: string;
             description: string | null;
@@ -135,6 +143,29 @@ export declare class EmployeesService {
         reportingManagerId: string | null;
         salaryStructureId: string | null;
         shiftId: string | null;
+    }>;
+    updateEmployeeUserRole(tenantId: string, employeeId: string, dto: UpdateEmployeeUserRoleDto): Promise<{
+        message: string;
+        userId: string;
+        user?: undefined;
+    } | {
+        message: string;
+        user: {
+            email: string;
+            id: string;
+            role: string;
+            isActive: boolean;
+        };
+        userId?: undefined;
+    }>;
+    deactivateEmployeeUser(tenantId: string, employeeId: string): Promise<{
+        message: string;
+        user: {
+            email: string;
+            id: string;
+            role: string;
+            isActive: boolean;
+        };
     }>;
     create(tenantId: string, dto: CreateEmployeeDto): Promise<{
         department: {

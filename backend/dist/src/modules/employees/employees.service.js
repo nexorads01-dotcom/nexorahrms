@@ -79,6 +79,7 @@ let EmployeesService = class EmployeesService {
                     department: { select: { id: true, name: true } },
                     designation: { select: { id: true, name: true } },
                     reportingManager: { select: { id: true, firstName: true, lastName: true } },
+                    user: { select: { role: true, isActive: true } },
                 },
             }),
             this.prisma.employee.count({ where: where }),
@@ -97,11 +98,76 @@ let EmployeesService = class EmployeesService {
                 reportingManager: { select: { id: true, firstName: true, lastName: true, email: true } },
                 shift: true,
                 salaryStructure: true,
+                user: { select: { role: true, isActive: true } },
             },
         });
         if (!employee)
             throw new common_1.NotFoundException('Employee not found');
         return employee;
+    }
+    async updateEmployeeUserRole(tenantId, employeeId, dto) {
+        const defaultPassword = 'NewPassword123!';
+        const employee = await this.prisma.employee.findFirst({
+            where: { id: employeeId, tenantId },
+            include: { user: true },
+        });
+        if (!employee)
+            throw new common_1.NotFoundException('Employee not found');
+        if (!employee.user) {
+            const passwordHash = await bcrypt.hash(defaultPassword, 12);
+            const user = await this.prisma.user.create({
+                data: {
+                    tenantId,
+                    email: employee.email,
+                    passwordHash,
+                    role: dto.role,
+                    isActive: dto.isActive ?? true,
+                    isVerified: dto.isVerified ?? true,
+                },
+            });
+            await this.prisma.employee.update({
+                where: { id: employee.id },
+                data: { userId: user.id },
+            });
+            return { message: 'User account created and role assigned', userId: user.id };
+        }
+        const updateData = {
+            role: dto.role,
+            isActive: dto.isActive ?? true,
+        };
+        if (dto.isVerified !== undefined)
+            updateData.isVerified = dto.isVerified;
+        if (dto.resetPassword) {
+            updateData.passwordHash = await bcrypt.hash(defaultPassword, 12);
+        }
+        if (employee.user.tenantId !== tenantId) {
+            throw new common_1.BadRequestException('User does not belong to the current tenant');
+        }
+        const updated = await this.prisma.user.update({
+            where: { id: employee.user.id },
+            data: updateData,
+            select: { id: true, email: true, role: true, isActive: true },
+        });
+        return { message: 'User role updated', user: updated };
+    }
+    async deactivateEmployeeUser(tenantId, employeeId) {
+        const employee = await this.prisma.employee.findFirst({
+            where: { id: employeeId, tenantId },
+            include: { user: true },
+        });
+        if (!employee)
+            throw new common_1.NotFoundException('Employee not found');
+        if (!employee.user)
+            throw new common_1.NotFoundException('Employee user account not found');
+        if (employee.user.tenantId !== tenantId) {
+            throw new common_1.BadRequestException('User does not belong to the current tenant');
+        }
+        const updated = await this.prisma.user.update({
+            where: { id: employee.user.id },
+            data: { isActive: false },
+            select: { id: true, email: true, role: true, isActive: true },
+        });
+        return { message: 'User deactivated', user: updated };
     }
     async create(tenantId, dto) {
         const existing = await this.prisma.employee.findFirst({ where: { tenantId, email: dto.email } });

@@ -210,7 +210,13 @@ let AuthService = class AuthService {
             where: { id: userId },
             include: {
                 tenant: { select: { id: true, name: true, subdomain: true, timezone: true, currency: true } },
-                employee: { include: { department: { select: { id: true, name: true } }, designation: { select: { id: true, name: true } } } },
+                employee: {
+                    include: {
+                        department: { select: { id: true, name: true } },
+                        designation: { select: { id: true, name: true } },
+                        reportingManager: { select: { id: true, firstName: true, lastName: true } },
+                    },
+                },
             },
         });
         if (!user)

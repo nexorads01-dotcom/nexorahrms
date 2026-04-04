@@ -9,10 +9,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EmployeeQueryDto = exports.UpdateEmployeeDto = exports.CreateEmployeeDto = void 0;
+exports.UpdateEmployeeUserRoleDto = exports.EmployeeQueryDto = exports.UpdateEmployeeDto = exports.CreateEmployeeDto = exports.USER_ROLES = void 0;
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const pagination_dto_1 = require("../../../common/dto/pagination.dto");
+exports.USER_ROLES = ['super_admin', 'company_admin', 'hr_manager', 'manager', 'employee'];
 class CreateEmployeeDto {
     firstName;
     lastName;
@@ -249,4 +250,35 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], EmployeeQueryDto.prototype, "employmentType", void 0);
+class UpdateEmployeeUserRoleDto {
+    role;
+    isActive;
+    isVerified;
+    resetPassword;
+}
+exports.UpdateEmployeeUserRoleDto = UpdateEmployeeUserRoleDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'manager', description: 'User role inside the current company (tenant)' }),
+    (0, class_validator_1.IsIn)(exports.USER_ROLES),
+    __metadata("design:type", String)
+], UpdateEmployeeUserRoleDto.prototype, "role", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: true }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateEmployeeUserRoleDto.prototype, "isActive", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: true }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateEmployeeUserRoleDto.prototype, "isVerified", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: false, description: 'If true, sets password to default "NewPassword123!"' }),
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateEmployeeUserRoleDto.prototype, "resetPassword", void 0);
 //# sourceMappingURL=employee.dto.js.map

@@ -1,6 +1,9 @@
-import { IsString, IsEmail, IsOptional, IsDateString } from 'class-validator';
+import { IsBoolean, IsDateString, IsEmail, IsIn, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+
+export const USER_ROLES = ['super_admin', 'company_admin', 'hr_manager', 'manager', 'employee'] as const;
+export type UserRole = (typeof USER_ROLES)[number];
 
 export class CreateEmployeeDto {
   @ApiProperty() @IsString() firstName: string;
@@ -42,4 +45,26 @@ export class EmployeeQueryDto extends PaginationDto {
   @ApiPropertyOptional() @IsOptional() @IsString() departmentId?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() status?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() employmentType?: string;
+}
+
+export class UpdateEmployeeUserRoleDto {
+  @ApiProperty({ example: 'manager', description: 'User role inside the current company (tenant)' })
+  @IsIn(USER_ROLES as unknown as string[])
+  role: UserRole;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isVerified?: boolean;
+
+  @ApiPropertyOptional({ example: false, description: 'If true, sets password to default "NewPassword123!"' })
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  resetPassword?: boolean;
 }

@@ -4,62 +4,62 @@ export declare class AttendanceController {
     constructor(svc: AttendanceService);
     checkIn(tenantId: string, employeeId: string, req: any): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
         employeeId: string;
         date: Date;
         checkIn: Date | null;
         checkOut: Date | null;
         hoursWorked: number | null;
+        status: string;
         source: string;
         ipAddress: string | null;
         notes: string | null;
         isRegularized: boolean;
         regularizationReason: string | null;
+        createdAt: Date;
     }>;
     checkOut(tenantId: string, employeeId: string): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
         employeeId: string;
         date: Date;
         checkIn: Date | null;
         checkOut: Date | null;
         hoursWorked: number | null;
+        status: string;
         source: string;
         ipAddress: string | null;
         notes: string | null;
         isRegularized: boolean;
         regularizationReason: string | null;
+        createdAt: Date;
     }>;
     getToday(tenantId: string): Promise<{
         records: ({
             employee: {
-                department: {
-                    name: string;
-                } | null;
                 id: string;
                 employeeCode: string;
                 firstName: string;
                 lastName: string;
+                department: {
+                    name: string;
+                } | null;
             };
         } & {
             id: string;
-            status: string;
-            createdAt: Date;
             tenantId: string;
             employeeId: string;
             date: Date;
             checkIn: Date | null;
             checkOut: Date | null;
             hoursWorked: number | null;
+            status: string;
             source: string;
             ipAddress: string | null;
             notes: string | null;
             isRegularized: boolean;
             regularizationReason: string | null;
+            createdAt: Date;
         })[];
         stats: {
             totalEmployees: number;
@@ -71,43 +71,43 @@ export declare class AttendanceController {
     }>;
     getMyAttendance(tenantId: string, employeeId: string, from?: string, to?: string): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
         employeeId: string;
         date: Date;
         checkIn: Date | null;
         checkOut: Date | null;
         hoursWorked: number | null;
+        status: string;
         source: string;
         ipAddress: string | null;
         notes: string | null;
         isRegularized: boolean;
         regularizationReason: string | null;
+        createdAt: Date;
     }[]>;
     getReport(tenantId: string, date: string): Promise<({
         employee: {
-            department: {
-                name: string;
-            } | null;
             employeeCode: string;
             firstName: string;
             lastName: string;
+            department: {
+                name: string;
+            } | null;
         };
     } & {
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
         employeeId: string;
         date: Date;
         checkIn: Date | null;
         checkOut: Date | null;
         hoursWorked: number | null;
+        status: string;
         source: string;
         ipAddress: string | null;
         notes: string | null;
         isRegularized: boolean;
         regularizationReason: string | null;
+        createdAt: Date;
     })[]>;
 }

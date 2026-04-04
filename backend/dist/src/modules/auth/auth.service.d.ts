@@ -57,6 +57,11 @@ export declare class AuthService {
                 name: string;
                 id: string;
             } | null;
+            reportingManager: {
+                id: string;
+                firstName: string;
+                lastName: string;
+            } | null;
         } & {
             email: string;
             id: string;

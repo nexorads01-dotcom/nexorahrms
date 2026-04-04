@@ -1,4 +1,6 @@
 import { PaginationDto } from '../../../common/dto/pagination.dto';
+export declare const USER_ROLES: readonly ["super_admin", "company_admin", "hr_manager", "manager", "employee"];
+export type UserRole = (typeof USER_ROLES)[number];
 export declare class CreateEmployeeDto {
     firstName: string;
     lastName: string;
@@ -37,4 +39,10 @@ export declare class EmployeeQueryDto extends PaginationDto {
     departmentId?: string;
     status?: string;
     employmentType?: string;
+}
+export declare class UpdateEmployeeUserRoleDto {
+    role: UserRole;
+    isActive?: boolean;
+    isVerified?: boolean;
+    resetPassword?: boolean;
 }

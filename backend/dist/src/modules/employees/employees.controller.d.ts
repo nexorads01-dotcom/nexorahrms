@@ -1,8 +1,11 @@
 import { EmployeesService } from './employees.service';
-import { CreateEmployeeDto, UpdateEmployeeDto, EmployeeQueryDto } from './dto/employee.dto';
+import { CreateEmployeeDto, EmployeeQueryDto, UpdateEmployeeDto, UpdateEmployeeUserRoleDto } from './dto/employee.dto';
 export declare class EmployeesController {
     private employeesService;
     constructor(employeesService: EmployeesService);
+    getAllowedRoles(): {
+        roles: ("employee" | "company_admin" | "super_admin" | "hr_manager" | "manager")[];
+    };
     findAll(tenantId: string, query: EmployeeQueryDto): Promise<{
         meta: {
             page: number;
@@ -11,6 +14,10 @@ export declare class EmployeesController {
             totalPages: number;
         };
         items: ({
+            user: {
+                role: string;
+                isActive: boolean;
+            } | null;
             department: {
                 name: string;
                 id: string;
@@ -64,6 +71,10 @@ export declare class EmployeesController {
         departments: number;
     }>;
     findOne(tenantId: string, id: string): Promise<{
+        user: {
+            role: string;
+            isActive: boolean;
+        } | null;
         department: {
             name: string;
             description: string | null;
@@ -251,5 +262,28 @@ export declare class EmployeesController {
         reportingManagerId: string | null;
         salaryStructureId: string | null;
         shiftId: string | null;
+    }>;
+    updateEmployeeUserRole(tenantId: string, id: string, dto: UpdateEmployeeUserRoleDto): Promise<{
+        message: string;
+        userId: string;
+        user?: undefined;
+    } | {
+        message: string;
+        user: {
+            email: string;
+            id: string;
+            role: string;
+            isActive: boolean;
+        };
+        userId?: undefined;
+    }>;
+    deactivateEmployeeUserRole(tenantId: string, id: string): Promise<{
+        message: string;
+        user: {
+            email: string;
+            id: string;
+            role: string;
+            isActive: boolean;
+        };
     }>;
 }

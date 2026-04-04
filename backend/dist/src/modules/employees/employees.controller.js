@@ -23,6 +23,9 @@ let EmployeesController = class EmployeesController {
     constructor(employeesService) {
         this.employeesService = employeesService;
     }
+    getAllowedRoles() {
+        return { roles: [...employee_dto_1.USER_ROLES] };
+    }
     findAll(tenantId, query) {
         return this.employeesService.findAll(tenantId, query);
     }
@@ -41,11 +44,25 @@ let EmployeesController = class EmployeesController {
     remove(tenantId, id) {
         return this.employeesService.remove(tenantId, id);
     }
+    updateEmployeeUserRole(tenantId, id, dto) {
+        return this.employeesService.updateEmployeeUserRole(tenantId, id, dto);
+    }
+    deactivateEmployeeUserRole(tenantId, id) {
+        return this.employeesService.deactivateEmployeeUser(tenantId, id);
+    }
 };
 exports.EmployeesController = EmployeesController;
 __decorate([
-    (0, common_1.Get)(),
+    (0, common_1.Get)('roles'),
     (0, decorators_1.Roles)('hr_manager'),
+    (0, swagger_1.ApiOperation)({ summary: 'List allowed user roles inside the current company (tenant)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], EmployeesController.prototype, "getAllowedRoles", null);
+__decorate([
+    (0, common_1.Get)(),
+    (0, decorators_1.Roles)('employee'),
     (0, swagger_1.ApiOperation)({ summary: 'List all employees (paginated)' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Query)()),
@@ -55,7 +72,7 @@ __decorate([
 ], EmployeesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('stats'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, decorators_1.Roles)('employee'),
     (0, swagger_1.ApiOperation)({ summary: 'Get employee statistics' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __metadata("design:type", Function),
@@ -102,6 +119,27 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Patch)(':id/user-role'),
+    (0, decorators_1.Roles)('hr_manager'),
+    (0, swagger_1.ApiOperation)({ summary: 'Assign/Update a user role for an employee account' }),
+    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, employee_dto_1.UpdateEmployeeUserRoleDto]),
+    __metadata("design:returntype", void 0)
+], EmployeesController.prototype, "updateEmployeeUserRole", null);
+__decorate([
+    (0, common_1.Delete)(':id/user-role'),
+    (0, decorators_1.Roles)('hr_manager'),
+    (0, swagger_1.ApiOperation)({ summary: 'Remove access by deactivating an employee user account' }),
+    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], EmployeesController.prototype, "deactivateEmployeeUserRole", null);
 exports.EmployeesController = EmployeesController = __decorate([
     (0, swagger_1.ApiTags)('Employees'),
     (0, swagger_1.ApiBearerAuth)(),
