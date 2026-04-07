@@ -4,9 +4,9 @@ export declare class EmployeesController {
     private employeesService;
     constructor(employeesService: EmployeesService);
     getAllowedRoles(): {
-        roles: ("employee" | "company_admin" | "super_admin" | "hr_manager" | "manager")[];
+        roles: ("employee" | "super_admin" | "company_admin" | "hr_manager" | "manager")[];
     };
-    findAll(tenantId: string, query: EmployeeQueryDto): Promise<{
+    findAll(user: any, query: EmployeeQueryDto): Promise<{
         meta: {
             page: number;
             limit: number;
@@ -34,11 +34,12 @@ export declare class EmployeesController {
         } & {
             email: string;
             id: string;
-            country: string | null;
-            status: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            userId: string | null;
+            country: string | null;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -56,7 +57,6 @@ export declare class EmployeesController {
             emergencyContact: string;
             bankDetails: string;
             customFields: string;
-            userId: string | null;
             departmentId: string | null;
             designationId: string | null;
             reportingManagerId: string | null;
@@ -79,9 +79,9 @@ export declare class EmployeesController {
             name: string;
             description: string | null;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             code: string | null;
             headId: string | null;
             parentId: string | null;
@@ -89,17 +89,17 @@ export declare class EmployeesController {
         designation: {
             name: string;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             level: number;
         } | null;
         shift: {
             name: string;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             startTime: string;
             endTime: string;
             graceMinutes: number;
@@ -108,9 +108,9 @@ export declare class EmployeesController {
         salaryStructure: {
             name: string;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             baseSalary: number;
             allowances: string;
             deductions: string;
@@ -124,11 +124,12 @@ export declare class EmployeesController {
     } & {
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -146,7 +147,6 @@ export declare class EmployeesController {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;
@@ -163,11 +163,12 @@ export declare class EmployeesController {
     } & {
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -185,7 +186,6 @@ export declare class EmployeesController {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;
@@ -202,11 +202,12 @@ export declare class EmployeesController {
     } & {
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -224,7 +225,6 @@ export declare class EmployeesController {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;
@@ -234,11 +234,12 @@ export declare class EmployeesController {
     remove(tenantId: string, id: string): Promise<{
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -256,7 +257,6 @@ export declare class EmployeesController {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;
@@ -270,9 +270,9 @@ export declare class EmployeesController {
     } | {
         message: string;
         user: {
+            role: string;
             email: string;
             id: string;
-            role: string;
             isActive: boolean;
         };
         userId?: undefined;
@@ -280,9 +280,9 @@ export declare class EmployeesController {
     deactivateEmployeeUserRole(tenantId: string, id: string): Promise<{
         message: string;
         user: {
+            role: string;
             email: string;
             id: string;
-            role: string;
             isActive: boolean;
         };
     }>;

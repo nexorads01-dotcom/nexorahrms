@@ -5,12 +5,15 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, LoginDto, ChangePasswordDto } from './dto/auth.dto';
+import { seedSystemRoles, assignRoleToUser } from '../roles/seeds/seed-roles';
+import { PermissionsService } from '../roles/permissions.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private permissionsService: PermissionsService
   ) {}
 
   async register(dto: RegisterDto) {
@@ -105,6 +108,17 @@ export class AuthService {
         data: { tenantId: tenant.id, plan: 'professional', status: 'trialing', employeeLimit: 500, trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
       });
 
+      // 9. Seed RBAC — System roles + permissions
+      console.log('🔐 Seeding RBAC roles & permissions...');
+      const roleMap = await seedSystemRoles(db as any, tenant.id);
+
+      // 10. Assign 'company_admin' role to the admin user
+      const companyAdminRoleId = roleMap['company_admin'];
+      if (companyAdminRoleId) {
+        await assignRoleToUser(db as any, user.id, companyAdminRoleId);
+        console.log(`  ✅ Assigned 'Company Admin' role to ${dto.email}`);
+      }
+
       return { tenant, user, employee };
     });
 
@@ -158,6 +172,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         name: user.employee ? `${user.employee.firstName} ${user.employee.lastName}` : user.email,
+        employee: user.employee ? { id: user.employee.id } : null,
         tenant: { id: user.tenant.id, name: user.tenant.name, subdomain: user.tenant.subdomain },
       },
     };
@@ -210,16 +225,24 @@ export class AuthService {
             reportingManager: { select: { id: true, firstName: true, lastName: true } },
           },
         },
+        userRoles: {
+          include: { role: { select: { slug: true } } },
+        },
       },
     });
     if (!user) throw new BadRequestException('User not found');
 
+    const { permissions, scopes } = await this.permissionsService.getUserPermissionsWithScopes(userId);
+
     return {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role, // Legacy role, kept for backward compatibility
+      roles: user.userRoles.map(ur => ur.role.slug), // New RBAC roles
       employee: user.employee,
       tenant: user.tenant,
+      permissions,
+      dataScopes: scopes,
     };
   }
 

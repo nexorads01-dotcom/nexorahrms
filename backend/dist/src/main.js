@@ -6,8 +6,10 @@ const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const corsAllowAll = process.env.CORS_ALLOW_ALL === 'true';
+    const corsOrigins = process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean);
     app.enableCors({
-        origin: ['http://localhost:3001', 'http://localhost:3000'],
+        origin: corsAllowAll ? true : corsOrigins?.length ? corsOrigins : ['http://localhost:3001', 'http://localhost:3000', 'http://127.0.0.1:3001'],
         credentials: true,
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
@@ -31,8 +33,8 @@ async function bootstrap() {
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, swaggerConfig);
     swagger_1.SwaggerModule.setup('api/docs', app, document);
-    const port = process.env.PORT || 3000;
-    await app.listen(port);
+    const port = Number(process.env.PORT) || 3000;
+    await app.listen(port, '0.0.0.0');
     console.log(`\n🚀 Nexora HRMS API running on http://localhost:${port}`);
     console.log(`📚 Swagger docs at http://localhost:${port}/api/docs\n`);
 }

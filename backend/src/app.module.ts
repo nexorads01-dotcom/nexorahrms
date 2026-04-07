@@ -8,10 +8,11 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { LeaveModule } from './modules/leave/leave.module';
 import { PayrollModule } from './modules/payroll/payroll.module';
+import { RolesModule } from './modules/roles/roles.module';
 import { AppController } from './app.controller';
 
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-import { RolesGuard } from './common/guards/roles.guard';
+import { PermissionsGuard } from './modules/roles/permissions.guard';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 @Module({
@@ -25,13 +26,14 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     AttendanceModule,
     LeaveModule,
     PayrollModule,
+    RolesModule,
 
   ],
   providers: [
     // Global JWT Auth guard (all routes require auth unless @Public())
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     // Global Roles guard
-    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: PermissionsGuard },
     // Global response transformer
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
   ],

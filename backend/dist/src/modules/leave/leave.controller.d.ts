@@ -5,8 +5,8 @@ export declare class LeaveController {
     getTypes(tenantId: string): Promise<({
         policies: {
             id: string;
-            createdAt: Date;
             tenantId: string;
+            createdAt: Date;
             annualQuota: number;
             maxCarryForward: number;
             allowNegative: boolean;
@@ -16,9 +16,9 @@ export declare class LeaveController {
     } & {
         name: string;
         id: string;
-        createdAt: Date;
-        isActive: boolean;
         tenantId: string;
+        isActive: boolean;
+        createdAt: Date;
         code: string;
         isPaid: boolean;
         color: string;
@@ -32,9 +32,9 @@ export declare class LeaveController {
     }): Promise<{
         name: string;
         id: string;
-        createdAt: Date;
-        isActive: boolean;
         tenantId: string;
+        isActive: boolean;
+        createdAt: Date;
         code: string;
         isPaid: boolean;
         color: string;
@@ -52,9 +52,9 @@ export declare class LeaveController {
         };
     } & {
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -66,7 +66,7 @@ export declare class LeaveController {
         reviewedAt: Date | null;
         reviewComment: string | null;
     }>;
-    getRequests(tenantId: string, status?: string, employeeId?: string): Promise<({
+    getRequests(user: any, status?: string, employeeId?: string): Promise<({
         employee: {
             department: {
                 name: string;
@@ -83,9 +83,9 @@ export declare class LeaveController {
         };
     } & {
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -97,7 +97,7 @@ export declare class LeaveController {
         reviewedAt: Date | null;
         reviewComment: string | null;
     })[]>;
-    getPending(tenantId: string): Promise<({
+    getPending(user: any): Promise<({
         employee: {
             department: {
                 name: string;
@@ -114,9 +114,9 @@ export declare class LeaveController {
         };
     } & {
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -132,9 +132,9 @@ export declare class LeaveController {
         comment?: string;
     }): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -150,9 +150,9 @@ export declare class LeaveController {
         comment?: string;
     }): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -166,9 +166,9 @@ export declare class LeaveController {
     }>;
     cancel(tenantId: string, employeeId: string, id: string): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -195,8 +195,8 @@ export declare class LeaveController {
         name: string;
         description: string | null;
         id: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
         date: Date;
         isOptional: boolean;
     }[]>;
@@ -209,8 +209,8 @@ export declare class LeaveController {
         name: string;
         description: string | null;
         id: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
         date: Date;
         isOptional: boolean;
     }>;

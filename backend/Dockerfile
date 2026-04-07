@@ -1,25 +1,42 @@
-FROM node:20-alpine
+# ============================================
+# Nexora HRMS — Backend Dockerfile
+# Multi-stage build for smaller production image
+# ============================================
+
+# ---------- Stage 1: Install & Build ----------
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies first (better caching)
 COPY package*.json ./
 RUN npm ci
 
-# Copy prisma schema
+# Copy prisma schema and generate client
 COPY prisma ./prisma/
-
-# Copy source
-COPY . .
-
-# Generate Prisma client for PostgreSQL
+COPY prisma.config.ts ./
 RUN npx prisma generate
 
-# Build
+# Copy source and build
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
+COPY src ./src/
 RUN npm run build
+
+# ---------- Stage 2: Production ----------
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Copy built output and dependencies
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./
+COPY --from=builder /app/package*.json ./
 
 # Expose port
 EXPOSE 3000
 
-# Start script: migrate + seed + start
+# Start: push schema → seed (ignore errors) → run app
 CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npx ts-node prisma/seed.ts 2>/dev/null; node dist/main"]

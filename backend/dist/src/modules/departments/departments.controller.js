@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const departments_service_1 = require("./departments.service");
 const decorators_1 = require("../../common/decorators");
+const permissions_decorator_1 = require("../roles/permissions.decorator");
 let DepartmentsController = class DepartmentsController {
     svc;
     constructor(svc) {
@@ -31,6 +32,7 @@ let DepartmentsController = class DepartmentsController {
 exports.DepartmentsController = DepartmentsController;
 __decorate([
     (0, common_1.Get)(),
+    (0, permissions_decorator_1.RequirePermissions)('departments:view'),
     (0, swagger_1.ApiOperation)({ summary: 'List departments' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __metadata("design:type", Function),
@@ -39,6 +41,7 @@ __decorate([
 ], DepartmentsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, permissions_decorator_1.RequirePermissions)('departments:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get department' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -48,7 +51,7 @@ __decorate([
 ], DepartmentsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('departments:create'),
     (0, swagger_1.ApiOperation)({ summary: 'Create department' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Body)()),
@@ -58,7 +61,7 @@ __decorate([
 ], DepartmentsController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':id'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('departments:edit_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Update department' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -69,7 +72,7 @@ __decorate([
 ], DepartmentsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, decorators_1.Roles)('company_admin'),
+    (0, permissions_decorator_1.RequirePermissions)('departments:delete'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete department' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),

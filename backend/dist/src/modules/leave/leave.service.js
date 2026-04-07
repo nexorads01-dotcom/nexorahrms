@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LeaveService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const data_scope_util_1 = require("../roles/data-scope.util");
 let LeaveService = class LeaveService {
     prisma;
     constructor(prisma) {
@@ -43,8 +44,10 @@ let LeaveService = class LeaveService {
             include: { leaveType: { select: { name: true, code: true } } },
         });
     }
-    async getRequests(tenantId, filters) {
-        const where = { tenantId };
+    async getRequests(user, filters) {
+        const scope = user.dataScopes?.['leaves'] || 'self';
+        const filter = (0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'employeeId' });
+        const where = { ...filter, tenantId: user.tenantId };
         if (filters?.status)
             where.status = filters.status;
         if (filters?.employeeId)

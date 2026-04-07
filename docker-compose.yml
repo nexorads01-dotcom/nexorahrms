@@ -1,9 +1,12 @@
 # ============================================
-# Nexora HRMS — Docker Compose (Local Dev)
+# Nexora HRMS — Docker Compose (Full Stack)
 # ============================================
-# Usage:  docker-compose up -d
-# Stop:   docker-compose down
-# Reset:  docker-compose down -v  (removes DB data)
+# Usage:
+#   Start all:    docker-compose up -d --build
+#   Stop all:     docker-compose down
+#   View logs:    docker-compose logs -f
+#   Reset DB:     docker-compose down -v
+#   Rebuild one:  docker-compose up -d --build backend
 # ============================================
 
 services:
@@ -25,6 +28,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - nexora-network
 
   # -------- pgAdmin (Database GUI) --------
   pgadmin:
@@ -43,8 +48,10 @@ services:
         condition: service_healthy
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - nexora-network
 
-  # -------- NestJS Backend --------
+  # -------- NestJS Backend API --------
   backend:
     build:
       context: ./backend
@@ -56,32 +63,44 @@ services:
       JWT_SECRET: "nexora-jwt-secret-docker-2026"
       JWT_REFRESH_SECRET: "nexora-refresh-secret-docker-2026"
       PORT: "3000"
-      NODE_ENV: "development"
+      NODE_ENV: "production"
+      # Allow browser from any host:port (LAN, Docker Desktop, etc.). Tighten for public production.
+      CORS_ALLOW_ALL: "true"
     ports:
       - "3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./backend/src:/app/src
-      - ./backend/prisma:/app/prisma
+    networks:
+      - nexora-network
 
   # -------- Next.js Frontend --------
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: "http://localhost:3000/api/v1"
     container_name: nexora-frontend
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: "http://localhost:3000/api/v1"
+      NODE_ENV: "production"
+      # Docker sets HOSTNAME to the container id; Next.js uses it as the bind address → must be 0.0.0.0 or the app is unreachable from the host.
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
     ports:
       - "3001:3000"
     depends_on:
       - backend
+    networks:
+      - nexora-network
 
 volumes:
   postgres_data:
     driver: local
   pgadmin_data:
     driver: local
+
+networks:
+  nexora-network:
+    driver: bridge

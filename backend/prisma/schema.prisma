@@ -37,6 +37,7 @@ model Tenant {
   documents         Document[]
   notifications     Notification[]
   auditLogs         AuditLog[]
+  roles             Role[]
   subscription      Subscription?
 
   @@map("tenants")
@@ -48,6 +49,7 @@ model User {
   tenantId            String
   email               String
   passwordHash        String
+  /// @deprecated Use userRoles mapping instead. Will be removed in future release.
   role                String    @default("employee") // super_admin, company_admin, hr_manager, manager, employee
   isActive            Boolean   @default(true)
   isVerified          Boolean   @default(false)
@@ -62,6 +64,7 @@ model User {
   employee      Employee?
   notifications Notification[]
   auditLogs     AuditLog[]
+  userRoles     UserRole[]
 
   @@unique([tenantId, email])
   @@index([tenantId, role])
@@ -430,4 +433,70 @@ model AuditLog {
 
   @@index([tenantId, entityType, entityId])
   @@map("audit_logs")
+}
+
+// ==================== ROLES (RBAC) ====================
+model Role {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  slug        String                        // e.g. "hr_manager", "payroll_clerk"
+  description String?
+  isSystem    Boolean  @default(false)       // true = seeded defaults, cannot be deleted
+  isActive    Boolean  @default(true)
+  level       Int      @default(0)           // hierarchy level for fallback ordering
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, isActive])
+  @@map("roles")
+}
+
+// ==================== PERMISSIONS (RBAC) ====================
+model Permission {
+  id          String   @id @default(uuid())
+  module      String                         // "employees", "attendance", "leaves", etc.
+  action      String                         // "view", "view_all", "create", "edit", "edit_all", "delete", "approve", "export"
+  slug        String   @unique               // "employees:view", "attendance:view_all"
+  description String?
+  category    String                         // "Overview", "People", "Operations", "Admin"
+  createdAt   DateTime @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@unique([module, action])
+  @@map("permissions")
+}
+
+// ==================== ROLE <-> PERMISSION (Many-to-Many with Data Scope) ====================
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String
+  permissionId String
+  dataScope    String @default("self")       // "self", "team", "department", "all"
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ==================== USER <-> ROLE (Many-to-Many) ====================
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
 }

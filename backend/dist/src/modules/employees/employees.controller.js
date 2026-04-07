@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const employees_service_1 = require("./employees.service");
 const employee_dto_1 = require("./dto/employee.dto");
 const decorators_1 = require("../../common/decorators");
+const permissions_decorator_1 = require("../roles/permissions.decorator");
 let EmployeesController = class EmployeesController {
     employeesService;
     constructor(employeesService) {
@@ -26,8 +27,8 @@ let EmployeesController = class EmployeesController {
     getAllowedRoles() {
         return { roles: [...employee_dto_1.USER_ROLES] };
     }
-    findAll(tenantId, query) {
-        return this.employeesService.findAll(tenantId, query);
+    findAll(user, query) {
+        return this.employeesService.findAll(user, query);
     }
     getStats(tenantId) {
         return this.employeesService.getStats(tenantId);
@@ -54,7 +55,7 @@ let EmployeesController = class EmployeesController {
 exports.EmployeesController = EmployeesController;
 __decorate([
     (0, common_1.Get)('roles'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('roles:view_all'),
     (0, swagger_1.ApiOperation)({ summary: 'List allowed user roles inside the current company (tenant)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -62,17 +63,17 @@ __decorate([
 ], EmployeesController.prototype, "getAllowedRoles", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, decorators_1.Roles)('employee'),
+    (0, permissions_decorator_1.RequirePermissions)('employees:view'),
     (0, swagger_1.ApiOperation)({ summary: 'List all employees (paginated)' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, employee_dto_1.EmployeeQueryDto]),
+    __metadata("design:paramtypes", [Object, employee_dto_1.EmployeeQueryDto]),
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('stats'),
-    (0, decorators_1.Roles)('employee'),
+    (0, permissions_decorator_1.RequirePermissions)('employees:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get employee statistics' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __metadata("design:type", Function),
@@ -81,6 +82,7 @@ __decorate([
 ], EmployeesController.prototype, "getStats", null);
 __decorate([
     (0, common_1.Get)(':id'),
+    (0, permissions_decorator_1.RequirePermissions)('employees:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get employee by ID' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -90,7 +92,7 @@ __decorate([
 ], EmployeesController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('employees:create'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new employee' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Body)()),
@@ -100,7 +102,7 @@ __decorate([
 ], EmployeesController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':id'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('employees:edit_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Update employee' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -111,7 +113,7 @@ __decorate([
 ], EmployeesController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, decorators_1.Roles)('company_admin'),
+    (0, permissions_decorator_1.RequirePermissions)('employees:delete'),
     (0, swagger_1.ApiOperation)({ summary: 'Terminate employee (soft delete)' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -121,7 +123,7 @@ __decorate([
 ], EmployeesController.prototype, "remove", null);
 __decorate([
     (0, common_1.Patch)(':id/user-role'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('roles:edit'),
     (0, swagger_1.ApiOperation)({ summary: 'Assign/Update a user role for an employee account' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -132,7 +134,7 @@ __decorate([
 ], EmployeesController.prototype, "updateEmployeeUserRole", null);
 __decorate([
     (0, common_1.Delete)(':id/user-role'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('roles:edit'),
     (0, swagger_1.ApiOperation)({ summary: 'Remove access by deactivating an employee user account' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),

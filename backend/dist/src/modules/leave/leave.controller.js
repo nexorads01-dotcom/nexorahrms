@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const leave_service_1 = require("./leave.service");
 const decorators_1 = require("../../common/decorators");
+const permissions_decorator_1 = require("../roles/permissions.decorator");
 let LeaveController = class LeaveController {
     svc;
     constructor(svc) {
@@ -29,10 +30,10 @@ let LeaveController = class LeaveController {
     apply(tenantId, employeeId, body) {
         return this.svc.applyLeave(tenantId, employeeId, body);
     }
-    getRequests(tenantId, status, employeeId) {
-        return this.svc.getRequests(tenantId, { status, employeeId });
+    getRequests(user, status, employeeId) {
+        return this.svc.getRequests(user, { status, employeeId });
     }
-    getPending(tenantId) { return this.svc.getRequests(tenantId, { status: 'pending' }); }
+    getPending(user) { return this.svc.getRequests(user, { status: 'pending' }); }
     approve(tenantId, userId, id, body) {
         return this.svc.approveLeave(tenantId, id, userId, body?.comment);
     }
@@ -55,6 +56,7 @@ let LeaveController = class LeaveController {
 exports.LeaveController = LeaveController;
 __decorate([
     (0, common_1.Get)('types'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:view'),
     (0, swagger_1.ApiOperation)({ summary: 'List leave types' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __metadata("design:type", Function),
@@ -63,7 +65,7 @@ __decorate([
 ], LeaveController.prototype, "getTypes", null);
 __decorate([
     (0, common_1.Post)('types'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:edit_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Create leave type' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Body)()),
@@ -73,6 +75,7 @@ __decorate([
 ], LeaveController.prototype, "createType", null);
 __decorate([
     (0, common_1.Post)('requests'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:create'),
     (0, swagger_1.ApiOperation)({ summary: 'Apply for leave' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('employeeId')),
@@ -83,26 +86,27 @@ __decorate([
 ], LeaveController.prototype, "apply", null);
 __decorate([
     (0, common_1.Get)('requests'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:view'),
     (0, swagger_1.ApiOperation)({ summary: 'List leave requests' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Query)('status')),
     __param(2, (0, common_1.Query)('employeeId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], LeaveController.prototype, "getRequests", null);
 __decorate([
     (0, common_1.Get)('requests/pending'),
-    (0, decorators_1.Roles)('manager'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:view_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Pending approvals' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], LeaveController.prototype, "getPending", null);
 __decorate([
     (0, common_1.Put)('requests/:id/approve'),
-    (0, decorators_1.Roles)('manager'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:approve'),
     (0, swagger_1.ApiOperation)({ summary: 'Approve leave' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('id')),
@@ -114,7 +118,7 @@ __decorate([
 ], LeaveController.prototype, "approve", null);
 __decorate([
     (0, common_1.Put)('requests/:id/reject'),
-    (0, decorators_1.Roles)('manager'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:approve'),
     (0, swagger_1.ApiOperation)({ summary: 'Reject leave' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('id')),
@@ -126,6 +130,7 @@ __decorate([
 ], LeaveController.prototype, "reject", null);
 __decorate([
     (0, common_1.Delete)('requests/:id'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:delete'),
     (0, swagger_1.ApiOperation)({ summary: 'Cancel own leave request' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('employeeId')),
@@ -136,6 +141,7 @@ __decorate([
 ], LeaveController.prototype, "cancel", null);
 __decorate([
     (0, common_1.Get)('balance/:employeeId'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get leave balance' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('employeeId')),
@@ -145,6 +151,7 @@ __decorate([
 ], LeaveController.prototype, "getBalance", null);
 __decorate([
     (0, common_1.Get)('holidays'),
+    (0, permissions_decorator_1.RequirePermissions)('leaves:view'),
     (0, swagger_1.ApiOperation)({ summary: 'List holidays' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Query)('year')),
@@ -154,7 +161,7 @@ __decorate([
 ], LeaveController.prototype, "getHolidays", null);
 __decorate([
     (0, common_1.Post)('holidays'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('settings:edit_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Add holiday' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Body)()),

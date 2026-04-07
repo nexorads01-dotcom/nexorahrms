@@ -5,8 +5,8 @@ export declare class LeaveService {
     getLeaveTypes(tenantId: string): Promise<({
         policies: {
             id: string;
-            createdAt: Date;
             tenantId: string;
+            createdAt: Date;
             annualQuota: number;
             maxCarryForward: number;
             allowNegative: boolean;
@@ -16,9 +16,9 @@ export declare class LeaveService {
     } & {
         name: string;
         id: string;
-        createdAt: Date;
-        isActive: boolean;
         tenantId: string;
+        isActive: boolean;
+        createdAt: Date;
         code: string;
         isPaid: boolean;
         color: string;
@@ -32,9 +32,9 @@ export declare class LeaveService {
     }): Promise<{
         name: string;
         id: string;
-        createdAt: Date;
-        isActive: boolean;
         tenantId: string;
+        isActive: boolean;
+        createdAt: Date;
         code: string;
         isPaid: boolean;
         color: string;
@@ -52,9 +52,9 @@ export declare class LeaveService {
         };
     } & {
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -66,7 +66,7 @@ export declare class LeaveService {
         reviewedAt: Date | null;
         reviewComment: string | null;
     }>;
-    getRequests(tenantId: string, filters?: {
+    getRequests(user: any, filters?: {
         status?: string;
         employeeId?: string;
     }): Promise<({
@@ -86,9 +86,9 @@ export declare class LeaveService {
         };
     } & {
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -102,9 +102,9 @@ export declare class LeaveService {
     })[]>;
     approveLeave(tenantId: string, requestId: string, reviewedBy: string, comment?: string): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -118,9 +118,9 @@ export declare class LeaveService {
     }>;
     rejectLeave(tenantId: string, requestId: string, reviewedBy: string, comment?: string): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -134,9 +134,9 @@ export declare class LeaveService {
     }>;
     cancelLeave(tenantId: string, requestId: string, employeeId: string): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         leaveTypeId: string;
         employeeId: string;
         startDate: Date;
@@ -163,8 +163,8 @@ export declare class LeaveService {
         name: string;
         description: string | null;
         id: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
         date: Date;
         isOptional: boolean;
     }[]>;
@@ -177,8 +177,8 @@ export declare class LeaveService {
         name: string;
         description: string | null;
         id: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
         date: Date;
         isOptional: boolean;
     }>;

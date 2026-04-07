@@ -1,7 +1,12 @@
 node_modules
 dist
 .env
+.env.local
 *.db
 *.db-journal
 .git
 .gitignore
+.prettierrc
+README.md
+error.txt
+seed_error.log

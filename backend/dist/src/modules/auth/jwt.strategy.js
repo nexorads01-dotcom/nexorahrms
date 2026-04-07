@@ -14,37 +14,45 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const permissions_service_1 = require("../roles/permissions.service");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     prisma;
-    constructor(prisma) {
+    permissionsService;
+    constructor(prisma, permissionsService) {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
             secretOrKey: process.env.JWT_SECRET || 'nexora-jwt-secret-dev-2026',
         });
         this.prisma = prisma;
+        this.permissionsService = permissionsService;
     }
     async validate(payload) {
         const user = await this.prisma.user.findUnique({
             where: { id: payload.sub },
-            include: { employee: { select: { id: true, firstName: true, lastName: true } } },
+            include: { employee: { select: { id: true, firstName: true, lastName: true, departmentId: true } } },
         });
         if (!user || !user.isActive) {
             throw new common_1.UnauthorizedException('User not found or inactive');
         }
+        const { permissions, scopes } = await this.permissionsService.getUserPermissionsWithScopes(user.id);
         return {
             id: user.id,
             email: user.email,
             role: user.role,
             tenantId: user.tenantId,
             employeeId: user.employee?.id,
+            departmentId: user.employee?.departmentId,
             name: user.employee ? `${user.employee.firstName} ${user.employee.lastName}` : user.email,
+            permissions,
+            dataScopes: scopes,
         };
     }
 };
 exports.JwtStrategy = JwtStrategy;
 exports.JwtStrategy = JwtStrategy = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        permissions_service_1.PermissionsService])
 ], JwtStrategy);
 //# sourceMappingURL=jwt.strategy.js.map

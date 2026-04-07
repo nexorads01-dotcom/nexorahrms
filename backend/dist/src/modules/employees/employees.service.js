@@ -46,15 +46,18 @@ exports.EmployeesService = void 0;
 const common_1 = require("@nestjs/common");
 const bcrypt = __importStar(require("bcryptjs"));
 const prisma_service_1 = require("../../prisma/prisma.service");
+const data_scope_util_1 = require("../roles/data-scope.util");
 let EmployeesService = class EmployeesService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async findAll(tenantId, query) {
+    async findAll(user, query) {
         const { page = 1, limit = 20, sort = 'createdAt', order = 'desc', search, departmentId, status, employmentType } = query;
         const skip = (page - 1) * limit;
-        const where = { tenantId };
+        const scope = user.dataScopes?.['employees'] || 'self';
+        const baseWhere = (0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'id' });
+        const where = { ...baseWhere, tenantId: user.tenantId };
         if (departmentId)
             where.departmentId = departmentId;
         if (status)

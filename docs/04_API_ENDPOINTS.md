@@ -210,14 +210,30 @@ GET /attendance/report?date=2026-03-28
 
 ---
 
+## 🛡️ ROLES & PERMISSIONS MODULE (RBAC)
+
+| Method | Path | Auth | Role | Description |
+|--------|------|------|------|-------------|
+| `GET` | `/api/v1/permissions` | Bearer | hr_manager+ | List all distinct permissions available |
+| `GET` | `/api/v1/roles` | Bearer | Roles:view_all | List all system and custom roles |
+| `GET` | `/api/v1/roles/:id` | Bearer | Roles:view_all | Get role by ID with permissions |
+| `POST` | `/api/v1/roles` | Bearer | Roles:create | Create new custom role |
+| `PUT` | `/api/v1/roles/:id` | Bearer | Roles:edit | Update a custom role & its permissions |
+| `DELETE` | `/api/v1/roles/:id` | Bearer | Roles:delete | Soft delete/delete a role |
+| `PATCH` | `/api/v1/employees/:id/user-role` | Bearer | Roles:edit | Assign or Update employee's role account |
+| `DELETE` | `/api/v1/employees/:id/user-role` | Bearer | Roles:edit | Deactivate employee system access |
+
+---
+
 ## Total Endpoints: ~30 active
 
 | Module | Endpoints |
 |---|---|
 | Auth | 5 |
-| Employees | 6 |
+| Employees | 8 |
 | Departments | 5 |
 | Attendance | 5 |
 | Leave | 11 |
 | Payroll | 7 |
-| **Total** | **39** |
+| Roles (RBAC) | 8 |
+| **Total** | **49** |

@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const payroll_service_1 = require("./payroll.service");
 const decorators_1 = require("../../common/decorators");
+const permissions_decorator_1 = require("../roles/permissions.decorator");
 let PayrollController = class PayrollController {
     svc;
     constructor(svc) {
@@ -39,7 +40,7 @@ let PayrollController = class PayrollController {
 exports.PayrollController = PayrollController;
 __decorate([
     (0, common_1.Get)('structures'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('payroll:view_all'),
     (0, swagger_1.ApiOperation)({ summary: 'List salary structures' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __metadata("design:type", Function),
@@ -48,7 +49,7 @@ __decorate([
 ], PayrollController.prototype, "getStructures", null);
 __decorate([
     (0, common_1.Post)('structures'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('payroll:edit_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Create salary structure' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Body)()),
@@ -58,7 +59,7 @@ __decorate([
 ], PayrollController.prototype, "createStructure", null);
 __decorate([
     (0, common_1.Get)('runs'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('payroll:view_all'),
     (0, swagger_1.ApiOperation)({ summary: 'List payroll runs' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __metadata("design:type", Function),
@@ -67,7 +68,7 @@ __decorate([
 ], PayrollController.prototype, "getRuns", null);
 __decorate([
     (0, common_1.Post)('run'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('payroll:create'),
     (0, swagger_1.ApiOperation)({ summary: 'Run payroll for a month' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('id')),
@@ -78,7 +79,7 @@ __decorate([
 ], PayrollController.prototype, "createRun", null);
 __decorate([
     (0, common_1.Get)('runs/:id'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('payroll:view_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Payroll run detail with payslips' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -88,6 +89,7 @@ __decorate([
 ], PayrollController.prototype, "getRunDetail", null);
 __decorate([
     (0, common_1.Get)('payslips/:id'),
+    (0, permissions_decorator_1.RequirePermissions)('payroll:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get payslip detail' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, common_1.Param)('id')),
@@ -97,6 +99,7 @@ __decorate([
 ], PayrollController.prototype, "getPayslip", null);
 __decorate([
     (0, common_1.Get)('my-payslips'),
+    (0, permissions_decorator_1.RequirePermissions)('payroll:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get my payslips' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('employeeId')),

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { buildScopeFilter } from '../roles/data-scope.util';
 
 @Injectable()
 export class LeaveService {
@@ -41,8 +42,11 @@ export class LeaveService {
     });
   }
 
-  async getRequests(tenantId: string, filters?: { status?: string; employeeId?: string }) {
-    const where: any = { tenantId };
+  async getRequests(user: any, filters?: { status?: string; employeeId?: string }) {
+    const scope = user.dataScopes?.['leaves'] || 'self';
+    const filter = buildScopeFilter(scope, user, { employeeField: 'employeeId' });
+    const where: any = { ...filter, tenantId: user.tenantId };
+    
     if (filters?.status) where.status = filters.status;
     if (filters?.employeeId) where.employeeId = filters.employeeId;
 

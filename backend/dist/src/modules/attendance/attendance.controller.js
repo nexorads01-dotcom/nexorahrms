@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const attendance_service_1 = require("./attendance.service");
 const decorators_1 = require("../../common/decorators");
+const permissions_decorator_1 = require("../roles/permissions.decorator");
 let AttendanceController = class AttendanceController {
     svc;
     constructor(svc) {
@@ -28,15 +29,16 @@ let AttendanceController = class AttendanceController {
     checkOut(tenantId, employeeId) {
         return this.svc.checkOut(tenantId, employeeId);
     }
-    getToday(tenantId) { return this.svc.getToday(tenantId); }
+    getToday(user) { return this.svc.getToday(user); }
     getMyAttendance(tenantId, employeeId, from, to) {
         return this.svc.getEmployeeAttendance(tenantId, employeeId, from, to);
     }
-    getReport(tenantId, date) { return this.svc.getReport(tenantId, date); }
+    getReport(user, date) { return this.svc.getReport(user, date); }
 };
 exports.AttendanceController = AttendanceController;
 __decorate([
     (0, common_1.Post)('check-in'),
+    (0, permissions_decorator_1.RequirePermissions)('attendance:create'),
     (0, swagger_1.ApiOperation)({ summary: 'Clock in' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('employeeId')),
@@ -47,6 +49,7 @@ __decorate([
 ], AttendanceController.prototype, "checkIn", null);
 __decorate([
     (0, common_1.Post)('check-out'),
+    (0, permissions_decorator_1.RequirePermissions)('attendance:create'),
     (0, swagger_1.ApiOperation)({ summary: 'Clock out' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('employeeId')),
@@ -56,15 +59,16 @@ __decorate([
 ], AttendanceController.prototype, "checkOut", null);
 __decorate([
     (0, common_1.Get)('today'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('attendance:view_all', 'attendance:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Today\'s attendance report' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AttendanceController.prototype, "getToday", null);
 __decorate([
     (0, common_1.Get)('my'),
+    (0, permissions_decorator_1.RequirePermissions)('attendance:view'),
     (0, swagger_1.ApiOperation)({ summary: 'My attendance history' }),
     __param(0, (0, decorators_1.CurrentUser)('tenantId')),
     __param(1, (0, decorators_1.CurrentUser)('employeeId')),
@@ -76,12 +80,12 @@ __decorate([
 ], AttendanceController.prototype, "getMyAttendance", null);
 __decorate([
     (0, common_1.Get)('report'),
-    (0, decorators_1.Roles)('hr_manager'),
+    (0, permissions_decorator_1.RequirePermissions)('attendance:view_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Attendance report for a date' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Query)('date')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AttendanceController.prototype, "getReport", null);
 exports.AttendanceController = AttendanceController = __decorate([

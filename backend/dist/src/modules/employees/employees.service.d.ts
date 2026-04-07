@@ -3,7 +3,7 @@ import { CreateEmployeeDto, UpdateEmployeeDto, EmployeeQueryDto, UpdateEmployeeU
 export declare class EmployeesService {
     private prisma;
     constructor(prisma: PrismaService);
-    findAll(tenantId: string, query: EmployeeQueryDto): Promise<{
+    findAll(user: any, query: EmployeeQueryDto): Promise<{
         meta: {
             page: number;
             limit: number;
@@ -31,11 +31,12 @@ export declare class EmployeesService {
         } & {
             email: string;
             id: string;
-            country: string | null;
-            status: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            userId: string | null;
+            country: string | null;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -53,7 +54,6 @@ export declare class EmployeesService {
             emergencyContact: string;
             bankDetails: string;
             customFields: string;
-            userId: string | null;
             departmentId: string | null;
             designationId: string | null;
             reportingManagerId: string | null;
@@ -70,9 +70,9 @@ export declare class EmployeesService {
             name: string;
             description: string | null;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             code: string | null;
             headId: string | null;
             parentId: string | null;
@@ -80,17 +80,17 @@ export declare class EmployeesService {
         designation: {
             name: string;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             level: number;
         } | null;
         shift: {
             name: string;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             startTime: string;
             endTime: string;
             graceMinutes: number;
@@ -99,9 +99,9 @@ export declare class EmployeesService {
         salaryStructure: {
             name: string;
             id: string;
-            createdAt: Date;
-            isActive: boolean;
             tenantId: string;
+            isActive: boolean;
+            createdAt: Date;
             baseSalary: number;
             allowances: string;
             deductions: string;
@@ -115,11 +115,12 @@ export declare class EmployeesService {
     } & {
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -137,7 +138,6 @@ export declare class EmployeesService {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;
@@ -151,9 +151,9 @@ export declare class EmployeesService {
     } | {
         message: string;
         user: {
+            role: string;
             email: string;
             id: string;
-            role: string;
             isActive: boolean;
         };
         userId?: undefined;
@@ -161,9 +161,9 @@ export declare class EmployeesService {
     deactivateEmployeeUser(tenantId: string, employeeId: string): Promise<{
         message: string;
         user: {
+            role: string;
             email: string;
             id: string;
-            role: string;
             isActive: boolean;
         };
     }>;
@@ -177,11 +177,12 @@ export declare class EmployeesService {
     } & {
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -199,7 +200,6 @@ export declare class EmployeesService {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;
@@ -216,11 +216,12 @@ export declare class EmployeesService {
     } & {
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -238,7 +239,6 @@ export declare class EmployeesService {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;
@@ -248,11 +248,12 @@ export declare class EmployeesService {
     remove(tenantId: string, id: string): Promise<{
         email: string;
         id: string;
-        country: string | null;
-        status: string;
+        tenantId: string;
         createdAt: Date;
         updatedAt: Date;
-        tenantId: string;
+        userId: string | null;
+        country: string | null;
+        status: string;
         employeeCode: string;
         firstName: string;
         lastName: string;
@@ -270,7 +271,6 @@ export declare class EmployeesService {
         emergencyContact: string;
         bankDetails: string;
         customFields: string;
-        userId: string | null;
         departmentId: string | null;
         designationId: string | null;
         reportingManagerId: string | null;

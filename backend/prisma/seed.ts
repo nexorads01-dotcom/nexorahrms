@@ -1,8 +1,16 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
 import * as path from 'path';
+import { seedSystemRoles, assignRoleToUser } from '../src/modules/roles/seeds/seed-roles';
+import { LEGACY_ROLE_MAP } from '../src/modules/roles/constants/permissions.constants';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) throw new Error('DATABASE_URL not set');
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter } as any);
 
 const DEMO_EMPLOYEES = [
   { firstName: 'Priya', lastName: 'Sharma', email: 'priya.sharma@acme.com', gender: 'female', phone: '+91-9876543201', dept: 'Engineering', designation: 'Senior Developer', type: 'full_time' },
@@ -131,6 +139,35 @@ async function seed() {
 
     codeNum++;
     console.log(`  ✅ Created ${emp.firstName} ${emp.lastName} (${employeeCode}) — ${emp.dept}, ${emp.designation}`);
+  }
+
+  // ─── Seed RBAC Roles & Assign to Users ───────────────────────
+  console.log('\n🔐 Seeding RBAC roles & permissions...');
+  const roleMap = await seedSystemRoles(prisma as any, tenant.id);
+
+  // Assign roles to all users based on their legacy role field
+  console.log('\n🎭 Assigning roles to users...');
+  const allUsers = await prisma.user.findMany({
+    where: { tenantId: tenant.id },
+    select: { id: true, email: true, role: true },
+  });
+
+  for (const u of allUsers) {
+    // Check if user already has a role assignment
+    const existingAssignment = await prisma.userRole.findFirst({
+      where: { userId: u.id },
+    });
+    if (existingAssignment) {
+      console.log(`  ⏭️  ${u.email} already has a role assigned`);
+      continue;
+    }
+
+    const systemRoleSlug = LEGACY_ROLE_MAP[u.role] || 'employee';
+    const systemRoleId = roleMap[systemRoleSlug];
+    if (systemRoleId) {
+      await assignRoleToUser(prisma as any, u.id, systemRoleId);
+      console.log(`  🎭 ${u.email} → ${systemRoleSlug}`);
+    }
   }
 
   // Create attendance records for the last 7 days
@@ -300,6 +337,9 @@ async function seed() {
     holidays: await prisma.holiday.count({ where: { tenantId: tenant.id } }),
     payrollRuns: await prisma.payrollRun.count({ where: { tenantId: tenant.id } }),
     payslips: await prisma.payslip.count({ where: { tenantId: tenant.id } }),
+    roles: await prisma.role.count({ where: { tenantId: tenant.id } }),
+    userRoles: await prisma.userRole.count(),
+    permissions: await prisma.permission.count(),
   };
   console.table(counts);
   console.log('\n🔑 All demo employees use password: Demo123!');

@@ -47,12 +47,16 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcryptjs"));
 const prisma_service_1 = require("../../prisma/prisma.service");
+const seed_roles_1 = require("../roles/seeds/seed-roles");
+const permissions_service_1 = require("../roles/permissions.service");
 let AuthService = class AuthService {
     prisma;
     jwtService;
-    constructor(prisma, jwtService) {
+    permissionsService;
+    constructor(prisma, jwtService, permissionsService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
+        this.permissionsService = permissionsService;
     }
     async register(dto) {
         const existing = await this.prisma.tenant.findUnique({ where: { subdomain: dto.subdomain } });
@@ -125,6 +129,13 @@ let AuthService = class AuthService {
             await db.subscription.create({
                 data: { tenantId: tenant.id, plan: 'professional', status: 'trialing', employeeLimit: 500, trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
             });
+            console.log('🔐 Seeding RBAC roles & permissions...');
+            const roleMap = await (0, seed_roles_1.seedSystemRoles)(db, tenant.id);
+            const companyAdminRoleId = roleMap['company_admin'];
+            if (companyAdminRoleId) {
+                await (0, seed_roles_1.assignRoleToUser)(db, user.id, companyAdminRoleId);
+                console.log(`  ✅ Assigned 'Company Admin' role to ${dto.email}`);
+            }
             return { tenant, user, employee };
         });
         return {
@@ -170,6 +181,7 @@ let AuthService = class AuthService {
                 email: user.email,
                 role: user.role,
                 name: user.employee ? `${user.employee.firstName} ${user.employee.lastName}` : user.email,
+                employee: user.employee ? { id: user.employee.id } : null,
                 tenant: { id: user.tenant.id, name: user.tenant.name, subdomain: user.tenant.subdomain },
             },
         };
@@ -217,16 +229,23 @@ let AuthService = class AuthService {
                         reportingManager: { select: { id: true, firstName: true, lastName: true } },
                     },
                 },
+                userRoles: {
+                    include: { role: { select: { slug: true } } },
+                },
             },
         });
         if (!user)
             throw new common_1.BadRequestException('User not found');
+        const { permissions, scopes } = await this.permissionsService.getUserPermissionsWithScopes(userId);
         return {
             id: user.id,
             email: user.email,
             role: user.role,
+            roles: user.userRoles.map(ur => ur.role.slug),
             employee: user.employee,
             tenant: user.tenant,
+            permissions,
+            dataScopes: scopes,
         };
     }
     async generateTokens(userId, email, role, tenantId) {
@@ -246,6 +265,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        permissions_service_1.PermissionsService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

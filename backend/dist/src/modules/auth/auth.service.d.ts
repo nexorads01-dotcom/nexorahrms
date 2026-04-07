@@ -1,10 +1,12 @@
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, LoginDto, ChangePasswordDto } from './dto/auth.dto';
+import { PermissionsService } from '../roles/permissions.service';
 export declare class AuthService {
     private prisma;
     private jwtService;
-    constructor(prisma: PrismaService, jwtService: JwtService);
+    private permissionsService;
+    constructor(prisma: PrismaService, jwtService: JwtService, permissionsService: PermissionsService);
     register(dto: RegisterDto): Promise<{
         tenant: {
             id: string;
@@ -29,6 +31,9 @@ export declare class AuthService {
             email: string;
             role: string;
             name: string;
+            employee: {
+                id: string;
+            } | null;
             tenant: {
                 id: string;
                 name: string;
@@ -48,6 +53,7 @@ export declare class AuthService {
         id: string;
         email: string;
         role: string;
+        roles: string[];
         employee: ({
             department: {
                 name: string;
@@ -65,11 +71,12 @@ export declare class AuthService {
         } & {
             email: string;
             id: string;
-            country: string | null;
-            status: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            userId: string | null;
+            country: string | null;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -87,7 +94,6 @@ export declare class AuthService {
             emergencyContact: string;
             bankDetails: string;
             customFields: string;
-            userId: string | null;
             departmentId: string | null;
             designationId: string | null;
             reportingManagerId: string | null;
@@ -101,6 +107,8 @@ export declare class AuthService {
             currency: string;
             id: string;
         };
+        permissions: string[];
+        dataScopes: Record<string, string>;
     }>;
     private generateTokens;
 }

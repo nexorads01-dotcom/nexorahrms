@@ -12,12 +12,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AttendanceService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const data_scope_util_1 = require("../roles/data-scope.util");
+const emptyToday = () => ({
+    records: [],
+    stats: { totalEmployees: 0, present: 0, late: 0, absent: 0, onLeave: 0 },
+});
 let AttendanceService = class AttendanceService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     async checkIn(tenantId, employeeId, ipAddress) {
+        if (!employeeId) {
+            throw new common_1.BadRequestException('No employee profile is linked to this account. Contact HR.');
+        }
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const existing = await this.prisma.attendanceRecord.findFirst({ where: { tenantId, employeeId, date: today } });
@@ -33,6 +41,9 @@ let AttendanceService = class AttendanceService {
         });
     }
     async checkOut(tenantId, employeeId) {
+        if (!employeeId) {
+            throw new common_1.BadRequestException('No employee profile is linked to this account. Contact HR.');
+        }
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const record = await this.prisma.attendanceRecord.findFirst({ where: { tenantId, employeeId, date: today } });
@@ -47,15 +58,22 @@ let AttendanceService = class AttendanceService {
             data: { checkOut, hoursWorked: Math.round(hoursWorked * 100) / 100 },
         });
     }
-    async getToday(tenantId) {
+    async getToday(user) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const scope = user.dataScopes?.['attendance'] || 'self';
+        if (!user.employeeId && scope !== 'all') {
+            return emptyToday();
+        }
+        const filter = (0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'employeeId' });
+        const where = { ...filter, tenantId: user.tenantId, date: today };
         const records = await this.prisma.attendanceRecord.findMany({
-            where: { tenantId, date: today },
+            where,
             include: { employee: { select: { id: true, firstName: true, lastName: true, employeeCode: true, department: { select: { name: true } } } } },
             orderBy: { checkIn: 'asc' },
         });
-        const totalEmployees = await this.prisma.employee.count({ where: { tenantId, status: 'active' } });
+        const totalEmployeesWhere = { ...(0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'id' }), tenantId: user.tenantId, status: 'active' };
+        const totalEmployees = await this.prisma.employee.count({ where: totalEmployeesWhere });
         const present = records.filter((r) => r.status === 'present').length;
         const late = records.filter((r) => r.status === 'late').length;
         const absent = totalEmployees - records.length;
@@ -72,11 +90,17 @@ let AttendanceService = class AttendanceService {
         }
         return this.prisma.attendanceRecord.findMany({ where, orderBy: { date: 'desc' } });
     }
-    async getReport(tenantId, date) {
+    async getReport(user, date) {
         const targetDate = new Date(date);
         targetDate.setHours(0, 0, 0, 0);
+        const scope = user.dataScopes?.['attendance'] || 'self';
+        if (!user.employeeId && scope !== 'all') {
+            return [];
+        }
+        const filter = (0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'employeeId' });
+        const where = { ...filter, tenantId: user.tenantId, date: targetDate };
         return this.prisma.attendanceRecord.findMany({
-            where: { tenantId, date: targetDate },
+            where,
             include: { employee: { select: { firstName: true, lastName: true, employeeCode: true, department: { select: { name: true } } } } },
         });
     }

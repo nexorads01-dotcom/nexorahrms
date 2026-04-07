@@ -6,9 +6,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS for frontend
+  // CORS: Docker / LAN browsers send Origin http://<host>:3001 — not only localhost.
+  const corsAllowAll = process.env.CORS_ALLOW_ALL === 'true';
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean);
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    origin: corsAllowAll ? true : corsOrigins?.length ? corsOrigins : ['http://localhost:3001', 'http://localhost:3000', 'http://127.0.0.1:3001'],
     credentials: true,
   });
 
@@ -40,8 +42,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
+  const port = Number(process.env.PORT) || 3000;
+  await app.listen(port, '0.0.0.0');
   console.log(`\n🚀 Nexora HRMS API running on http://localhost:${port}`);
   console.log(`📚 Swagger docs at http://localhost:${port}/api/docs\n`);
 }

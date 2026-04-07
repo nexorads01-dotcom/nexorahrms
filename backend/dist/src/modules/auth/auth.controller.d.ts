@@ -27,6 +27,9 @@ export declare class AuthController {
             email: string;
             role: string;
             name: string;
+            employee: {
+                id: string;
+            } | null;
             tenant: {
                 id: string;
                 name: string;
@@ -43,6 +46,7 @@ export declare class AuthController {
         id: string;
         email: string;
         role: string;
+        roles: string[];
         employee: ({
             department: {
                 name: string;
@@ -60,11 +64,12 @@ export declare class AuthController {
         } & {
             email: string;
             id: string;
-            country: string | null;
-            status: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            userId: string | null;
+            country: string | null;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -82,7 +87,6 @@ export declare class AuthController {
             emergencyContact: string;
             bankDetails: string;
             customFields: string;
-            userId: string | null;
             departmentId: string | null;
             designationId: string | null;
             reportingManagerId: string | null;
@@ -96,6 +100,8 @@ export declare class AuthController {
             currency: string;
             id: string;
         };
+        permissions: string[];
+        dataScopes: Record<string, string>;
     }>;
     changePassword(userId: string, dto: ChangePasswordDto): Promise<{
         message: string;

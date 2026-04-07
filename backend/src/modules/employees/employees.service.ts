@@ -3,16 +3,20 @@ import { Injectable, NotFoundException, ConflictException, BadRequestException }
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateEmployeeDto, UpdateEmployeeDto, EmployeeQueryDto, UpdateEmployeeUserRoleDto } from './dto/employee.dto';
+import { buildScopeFilter } from '../roles/data-scope.util';
 
 @Injectable()
 export class EmployeesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(tenantId: string, query: EmployeeQueryDto) {
+  async findAll(user: any, query: EmployeeQueryDto) {
     const { page = 1, limit = 20, sort = 'createdAt', order = 'desc', search, departmentId, status, employmentType } = query;
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = { tenantId };
+    const scope = user.dataScopes?.['employees'] || 'self';
+    const baseWhere = buildScopeFilter(scope, user, { employeeField: 'id' });
+
+    const where: any = { ...baseWhere, tenantId: user.tenantId };
     if (departmentId) where.departmentId = departmentId;
     if (status) where.status = status;
     if (employmentType) where.employmentType = employmentType;

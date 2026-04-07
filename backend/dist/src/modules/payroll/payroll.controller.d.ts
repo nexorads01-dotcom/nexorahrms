@@ -9,9 +9,9 @@ export declare class PayrollController {
     } & {
         name: string;
         id: string;
-        createdAt: Date;
-        isActive: boolean;
         tenantId: string;
+        isActive: boolean;
+        createdAt: Date;
         baseSalary: number;
         allowances: string;
         deductions: string;
@@ -24,18 +24,18 @@ export declare class PayrollController {
     }): Promise<{
         name: string;
         id: string;
-        createdAt: Date;
-        isActive: boolean;
         tenantId: string;
+        isActive: boolean;
+        createdAt: Date;
         baseSalary: number;
         allowances: string;
         deductions: string;
     }>;
     getRuns(tenantId: string): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         notes: string | null;
         year: number;
         month: number;
@@ -51,9 +51,9 @@ export declare class PayrollController {
         year: number;
     }): Promise<{
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         notes: string | null;
         year: number;
         month: number;
@@ -73,8 +73,8 @@ export declare class PayrollController {
             };
         } & {
             id: string;
-            createdAt: Date;
             tenantId: string;
+            createdAt: Date;
             employeeId: string;
             totalDeductions: number;
             grossSalary: number;
@@ -90,9 +90,9 @@ export declare class PayrollController {
         })[];
     } & {
         id: string;
-        status: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
+        status: string;
         notes: string | null;
         year: number;
         month: number;
@@ -114,11 +114,12 @@ export declare class PayrollController {
         } & {
             email: string;
             id: string;
-            country: string | null;
-            status: string;
+            tenantId: string;
             createdAt: Date;
             updatedAt: Date;
-            tenantId: string;
+            userId: string | null;
+            country: string | null;
+            status: string;
             employeeCode: string;
             firstName: string;
             lastName: string;
@@ -136,7 +137,6 @@ export declare class PayrollController {
             emergencyContact: string;
             bankDetails: string;
             customFields: string;
-            userId: string | null;
             departmentId: string | null;
             designationId: string | null;
             reportingManagerId: string | null;
@@ -145,9 +145,9 @@ export declare class PayrollController {
         };
         payrollRun: {
             id: string;
-            status: string;
-            createdAt: Date;
             tenantId: string;
+            createdAt: Date;
+            status: string;
             notes: string | null;
             year: number;
             month: number;
@@ -160,8 +160,8 @@ export declare class PayrollController {
         };
     } & {
         id: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
         employeeId: string;
         totalDeductions: number;
         grossSalary: number;
@@ -183,8 +183,8 @@ export declare class PayrollController {
         };
     } & {
         id: string;
-        createdAt: Date;
         tenantId: string;
+        createdAt: Date;
         employeeId: string;
         totalDeductions: number;
         grossSalary: number;

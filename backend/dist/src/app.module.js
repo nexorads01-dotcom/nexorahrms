@@ -17,9 +17,10 @@ const departments_module_1 = require("./modules/departments/departments.module")
 const attendance_module_1 = require("./modules/attendance/attendance.module");
 const leave_module_1 = require("./modules/leave/leave.module");
 const payroll_module_1 = require("./modules/payroll/payroll.module");
+const roles_module_1 = require("./modules/roles/roles.module");
 const app_controller_1 = require("./app.controller");
 const jwt_auth_guard_1 = require("./common/guards/jwt-auth.guard");
-const roles_guard_1 = require("./common/guards/roles.guard");
+const permissions_guard_1 = require("./modules/roles/permissions.guard");
 const transform_interceptor_1 = require("./common/interceptors/transform.interceptor");
 let AppModule = class AppModule {
 };
@@ -36,10 +37,11 @@ exports.AppModule = AppModule = __decorate([
             attendance_module_1.AttendanceModule,
             leave_module_1.LeaveModule,
             payroll_module_1.PayrollModule,
+            roles_module_1.RolesModule,
         ],
         providers: [
             { provide: core_1.APP_GUARD, useClass: jwt_auth_guard_1.JwtAuthGuard },
-            { provide: core_1.APP_GUARD, useClass: roles_guard_1.RolesGuard },
+            { provide: core_1.APP_GUARD, useClass: permissions_guard_1.PermissionsGuard },
             { provide: core_1.APP_INTERCEPTOR, useClass: transform_interceptor_1.TransformInterceptor },
         ],
     })
