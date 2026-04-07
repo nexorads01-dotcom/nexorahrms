@@ -33,13 +33,13 @@ export class LeaveController {
   getPending(@CurrentUser() user: any) { return this.svc.getRequests(user, { status: 'pending' }); }
 
   @Put('requests/:id/approve') @RequirePermissions('leaves:approve') @ApiOperation({ summary: 'Approve leave' })
-  approve(@CurrentUser('tenantId') tenantId: string, @CurrentUser('id') userId: string, @Param('id') id: string, @Body() body: { comment?: string }) {
-    return this.svc.approveLeave(tenantId, id, userId, body?.comment);
+  approve(@CurrentUser() user: any, @CurrentUser('id') userId: string, @Param('id') id: string, @Body() body: { comment?: string }) {
+    return this.svc.approveLeave(user, id, userId, body?.comment);
   }
 
   @Put('requests/:id/reject') @RequirePermissions('leaves:approve') @ApiOperation({ summary: 'Reject leave' })
-  reject(@CurrentUser('tenantId') tenantId: string, @CurrentUser('id') userId: string, @Param('id') id: string, @Body() body: { comment?: string }) {
-    return this.svc.rejectLeave(tenantId, id, userId, body?.comment);
+  reject(@CurrentUser() user: any, @CurrentUser('id') userId: string, @Param('id') id: string, @Body() body: { comment?: string }) {
+    return this.svc.rejectLeave(user, id, userId, body?.comment);
   }
 
   @Delete('requests/:id') @RequirePermissions('leaves:delete') @ApiOperation({ summary: 'Cancel own leave request' })
@@ -48,8 +48,8 @@ export class LeaveController {
   }
 
   @Get('balance/:employeeId') @RequirePermissions('leaves:view') @ApiOperation({ summary: 'Get leave balance' })
-  getBalance(@CurrentUser('tenantId') tenantId: string, @Param('employeeId') employeeId: string) {
-    return this.svc.getBalance(tenantId, employeeId);
+  getBalance(@CurrentUser() user: any, @Param('employeeId') employeeId: string) {
+    return this.svc.getBalance(user.tenantId, employeeId, user);
   }
 
   @Get('holidays') @RequirePermissions('leaves:view') @ApiOperation({ summary: 'List holidays' })

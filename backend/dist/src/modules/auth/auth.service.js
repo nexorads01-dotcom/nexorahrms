@@ -49,6 +49,7 @@ const bcrypt = __importStar(require("bcryptjs"));
 const prisma_service_1 = require("../../prisma/prisma.service");
 const seed_roles_1 = require("../roles/seeds/seed-roles");
 const permissions_service_1 = require("../roles/permissions.service");
+const env_1 = require("../../config/env");
 let AuthService = class AuthService {
     prisma;
     jwtService;
@@ -145,8 +146,10 @@ let AuthService = class AuthService {
         };
     }
     async login(dto) {
+        const subdomain = dto.subdomain?.trim().toLowerCase();
+        const email = dto.email?.trim().toLowerCase();
         const user = await this.prisma.user.findFirst({
-            where: { email: dto.email },
+            where: { email, tenant: { subdomain } },
             include: { tenant: true, employee: { select: { id: true, firstName: true, lastName: true } } },
         });
         if (!user)
@@ -189,7 +192,7 @@ let AuthService = class AuthService {
     async refreshTokens(refreshToken) {
         try {
             const payload = this.jwtService.verify(refreshToken, {
-                secret: process.env.JWT_REFRESH_SECRET || 'nexora-refresh-secret-dev-2026',
+                secret: (0, env_1.requireEnv)('JWT_REFRESH_SECRET'),
             });
             const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
             if (!user || !user.refreshTokenHash)
@@ -251,11 +254,11 @@ let AuthService = class AuthService {
     async generateTokens(userId, email, role, tenantId) {
         const payload = { sub: userId, email, role, tenantId };
         const accessToken = this.jwtService.sign(payload, {
-            secret: process.env.JWT_SECRET || 'nexora-jwt-secret-dev-2026',
+            secret: (0, env_1.requireEnv)('JWT_SECRET'),
             expiresIn: '15m',
         });
         const refreshToken = this.jwtService.sign(payload, {
-            secret: process.env.JWT_REFRESH_SECRET || 'nexora-refresh-secret-dev-2026',
+            secret: (0, env_1.requireEnv)('JWT_REFRESH_SECRET'),
             expiresIn: '7d',
         });
         return { accessToken, refreshToken, expiresIn: 900 };

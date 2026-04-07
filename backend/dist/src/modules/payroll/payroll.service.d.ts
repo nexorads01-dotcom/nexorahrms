@@ -100,7 +100,7 @@ export declare class PayrollService {
         processedBy: string | null;
         processedAt: Date | null;
     }>;
-    getPayslip(tenantId: string, payslipId: string): Promise<{
+    getPayslip(user: any, payslipId: string): Promise<{
         employee: {
             department: {
                 name: string;

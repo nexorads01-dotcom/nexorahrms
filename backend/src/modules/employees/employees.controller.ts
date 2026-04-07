@@ -35,8 +35,8 @@ export class EmployeesController {
   @Get(':id')
   @RequirePermissions('employees:view')
   @ApiOperation({ summary: 'Get employee by ID' })
-  findOne(@CurrentUser('tenantId') tenantId: string, @Param('id') id: string) {
-    return this.employeesService.findOne(tenantId, id);
+  findOne(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.employeesService.findOne(user, id);
   }
 
   @Post()
@@ -49,8 +49,8 @@ export class EmployeesController {
   @Put(':id')
   @RequirePermissions('employees:edit_all')
   @ApiOperation({ summary: 'Update employee' })
-  update(@CurrentUser('tenantId') tenantId: string, @Param('id') id: string, @Body() dto: UpdateEmployeeDto) {
-    return this.employeesService.update(tenantId, id, dto);
+  update(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: UpdateEmployeeDto) {
+    return this.employeesService.update(user, id, dto);
   }
 
   @Delete(':id')

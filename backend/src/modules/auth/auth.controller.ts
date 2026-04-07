@@ -18,7 +18,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  @ApiOperation({ summary: 'Login with email & password' })
+  @ApiOperation({ summary: 'Login with workspace subdomain, email & password' })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }

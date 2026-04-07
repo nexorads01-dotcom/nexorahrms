@@ -32,7 +32,7 @@ let PayrollController = class PayrollController {
         return this.svc.createRun(tenantId, body.month, body.year, userId);
     }
     getRunDetail(tenantId, id) { return this.svc.getRunDetail(tenantId, id); }
-    getPayslip(tenantId, id) { return this.svc.getPayslip(tenantId, id); }
+    getPayslip(user, id) { return this.svc.getPayslip(user, id); }
     getMyPayslips(tenantId, employeeId) {
         return this.svc.getEmployeePayslips(tenantId, employeeId);
     }
@@ -91,10 +91,10 @@ __decorate([
     (0, common_1.Get)('payslips/:id'),
     (0, permissions_decorator_1.RequirePermissions)('payroll:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get payslip detail' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], PayrollController.prototype, "getPayslip", null);
 __decorate([

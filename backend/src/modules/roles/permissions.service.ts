@@ -12,6 +12,9 @@ interface CacheEntry {
 @Injectable()
 export class PermissionsService {
   private readonly logger = new Logger(PermissionsService.name);
+  private redisPub: any = null;
+  private redisSub: any = null;
+  private readonly redisChannel = 'permissions:invalidate';
   
   // 5 minute TTL for cached permissions
   private readonly CACHE_TTL_MS = 5 * 60 * 1000;
@@ -44,6 +47,29 @@ export class PermissionsService {
       const rate = total > 0 ? Math.round((this.stats.hits / total) * 100) : 0;
       this.logger.log(`Cache Stats: ${this.stats.hits} hits, ${this.stats.misses} misses (${rate}% hit rate), ${this.stats.revalidations} bg-revalidations.`);
     }, 60 * 60 * 1000); // Log stats every hour
+
+    // Optional distributed invalidation for multi-instance deployments.
+    // Enabled only when REDIS_URL is configured and redis package is installed.
+    await this.initDistributedInvalidation();
+  }
+
+  private async initDistributedInvalidation() {
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) return;
+    try {
+      const redisModule = (eval('require')('redis') as any);
+      this.redisPub = redisModule.createClient({ url: redisUrl });
+      this.redisSub = this.redisPub.duplicate();
+      await this.redisPub.connect();
+      await this.redisSub.connect();
+      await this.redisSub.subscribe(this.redisChannel, (msg: string) => {
+        if (msg === '*') this.permissionCache.clear();
+        else this.permissionCache.delete(msg);
+      });
+      this.logger.log('Distributed permissions cache invalidation enabled');
+    } catch (err) {
+      this.logger.warn('REDIS_URL set but redis client unavailable; using local permission cache only');
+    }
   }
 
   /**
@@ -51,6 +77,7 @@ export class PermissionsService {
    */
   invalidateCache(userId: string) {
     this.permissionCache.delete(userId);
+    this.redisPub?.publish(this.redisChannel, userId).catch(() => undefined);
     this.logger.debug(`Invalidated permission cache for user: ${userId}`);
   }
   
@@ -59,6 +86,7 @@ export class PermissionsService {
    */
   invalidateAllCache() {
     this.permissionCache.clear();
+    this.redisPub?.publish(this.redisChannel, '*').catch(() => undefined);
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { buildScopeFilter } from '../roles/data-scope.util';
 
 @Injectable()
 export class PayrollService {
@@ -76,9 +77,11 @@ export class PayrollService {
     return run;
   }
 
-  async getPayslip(tenantId: string, payslipId: string) {
+  async getPayslip(user: any, payslipId: string) {
+    const scope = user.dataScopes?.['payroll'] || 'self';
+    const filter = buildScopeFilter(scope, user, { employeeField: 'employeeId' });
     const payslip = await this.prisma.payslip.findFirst({
-      where: { id: payslipId, tenantId },
+      where: { id: payslipId, tenantId: user.tenantId, ...filter },
       include: { employee: { include: { department: { select: { name: true } }, designation: { select: { name: true } } } }, payrollRun: true },
     });
     if (!payslip) throw new NotFoundException('Payslip not found');

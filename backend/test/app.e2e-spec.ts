@@ -20,6 +20,20 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect((res) => {
+        expect(res.body).toMatchObject({
+          name: 'Nexora HRMS API',
+          apiPrefix: '/api/v1',
+        });
+      });
+  });
+
+  it('/api/health (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/api/health')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.status).toBe('ok');
+      });
   });
 });

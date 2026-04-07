@@ -2,6 +2,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export declare class LeaveService {
     private prisma;
     constructor(prisma: PrismaService);
+    private isEmployeeInScope;
     getLeaveTypes(tenantId: string): Promise<({
         policies: {
             id: string;
@@ -100,7 +101,7 @@ export declare class LeaveService {
         reviewedAt: Date | null;
         reviewComment: string | null;
     })[]>;
-    approveLeave(tenantId: string, requestId: string, reviewedBy: string, comment?: string): Promise<{
+    approveLeave(user: any, requestId: string, reviewedBy: string, comment?: string): Promise<{
         id: string;
         tenantId: string;
         createdAt: Date;
@@ -116,7 +117,7 @@ export declare class LeaveService {
         reviewedAt: Date | null;
         reviewComment: string | null;
     }>;
-    rejectLeave(tenantId: string, requestId: string, reviewedBy: string, comment?: string): Promise<{
+    rejectLeave(user: any, requestId: string, reviewedBy: string, comment?: string): Promise<{
         id: string;
         tenantId: string;
         createdAt: Date;
@@ -148,7 +149,7 @@ export declare class LeaveService {
         reviewedAt: Date | null;
         reviewComment: string | null;
     }>;
-    getBalance(tenantId: string, employeeId: string): Promise<{
+    getBalance(tenantId: string, employeeId: string, user?: any): Promise<{
         leaveTypeId: string;
         leaveType: string;
         code: string;

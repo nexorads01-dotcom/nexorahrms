@@ -3,6 +3,8 @@ import { CreateEmployeeDto, UpdateEmployeeDto, EmployeeQueryDto, UpdateEmployeeU
 export declare class EmployeesService {
     private prisma;
     constructor(prisma: PrismaService);
+    private ensureTenantRelation;
+    private validateEmployeeRelations;
     findAll(user: any, query: EmployeeQueryDto): Promise<{
         meta: {
             page: number;
@@ -61,7 +63,7 @@ export declare class EmployeesService {
             shiftId: string | null;
         })[];
     }>;
-    findOne(tenantId: string, id: string): Promise<{
+    findOne(user: any, id: string): Promise<{
         user: {
             role: string;
             isActive: boolean;
@@ -206,7 +208,7 @@ export declare class EmployeesService {
         salaryStructureId: string | null;
         shiftId: string | null;
     }>;
-    update(tenantId: string, id: string, dto: UpdateEmployeeDto): Promise<{
+    update(user: any, id: string, dto: UpdateEmployeeDto): Promise<{
         department: {
             name: string;
         } | null;

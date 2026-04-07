@@ -70,7 +70,7 @@ export declare class EmployeesController {
         onLeave: number;
         departments: number;
     }>;
-    findOne(tenantId: string, id: string): Promise<{
+    findOne(user: any, id: string): Promise<{
         user: {
             role: string;
             isActive: boolean;
@@ -192,7 +192,7 @@ export declare class EmployeesController {
         salaryStructureId: string | null;
         shiftId: string | null;
     }>;
-    update(tenantId: string, id: string, dto: UpdateEmployeeDto): Promise<{
+    update(user: any, id: string, dto: UpdateEmployeeDto): Promise<{
         department: {
             name: string;
         } | null;

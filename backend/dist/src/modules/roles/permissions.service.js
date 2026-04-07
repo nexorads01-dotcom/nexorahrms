@@ -17,6 +17,9 @@ const permissions_constants_1 = require("./constants/permissions.constants");
 let PermissionsService = PermissionsService_1 = class PermissionsService {
     prisma;
     logger = new common_1.Logger(PermissionsService_1.name);
+    redisPub = null;
+    redisSub = null;
+    redisChannel = 'permissions:invalidate';
     CACHE_TTL_MS = 5 * 60 * 1000;
     SWR_TTL_MS = 15 * 60 * 1000;
     permissionCache = new Map();
@@ -39,13 +42,38 @@ let PermissionsService = PermissionsService_1 = class PermissionsService {
             const rate = total > 0 ? Math.round((this.stats.hits / total) * 100) : 0;
             this.logger.log(`Cache Stats: ${this.stats.hits} hits, ${this.stats.misses} misses (${rate}% hit rate), ${this.stats.revalidations} bg-revalidations.`);
         }, 60 * 60 * 1000);
+        await this.initDistributedInvalidation();
+    }
+    async initDistributedInvalidation() {
+        const redisUrl = process.env.REDIS_URL;
+        if (!redisUrl)
+            return;
+        try {
+            const redisModule = eval('require')('redis');
+            this.redisPub = redisModule.createClient({ url: redisUrl });
+            this.redisSub = this.redisPub.duplicate();
+            await this.redisPub.connect();
+            await this.redisSub.connect();
+            await this.redisSub.subscribe(this.redisChannel, (msg) => {
+                if (msg === '*')
+                    this.permissionCache.clear();
+                else
+                    this.permissionCache.delete(msg);
+            });
+            this.logger.log('Distributed permissions cache invalidation enabled');
+        }
+        catch (err) {
+            this.logger.warn('REDIS_URL set but redis client unavailable; using local permission cache only');
+        }
     }
     invalidateCache(userId) {
         this.permissionCache.delete(userId);
+        this.redisPub?.publish(this.redisChannel, userId).catch(() => undefined);
         this.logger.debug(`Invalidated permission cache for user: ${userId}`);
     }
     invalidateAllCache() {
         this.permissionCache.clear();
+        this.redisPub?.publish(this.redisChannel, '*').catch(() => undefined);
     }
     getScopeWeight(scope) {
         switch (scope) {

@@ -34,17 +34,17 @@ let LeaveController = class LeaveController {
         return this.svc.getRequests(user, { status, employeeId });
     }
     getPending(user) { return this.svc.getRequests(user, { status: 'pending' }); }
-    approve(tenantId, userId, id, body) {
-        return this.svc.approveLeave(tenantId, id, userId, body?.comment);
+    approve(user, userId, id, body) {
+        return this.svc.approveLeave(user, id, userId, body?.comment);
     }
-    reject(tenantId, userId, id, body) {
-        return this.svc.rejectLeave(tenantId, id, userId, body?.comment);
+    reject(user, userId, id, body) {
+        return this.svc.rejectLeave(user, id, userId, body?.comment);
     }
     cancel(tenantId, employeeId, id) {
         return this.svc.cancelLeave(tenantId, id, employeeId);
     }
-    getBalance(tenantId, employeeId) {
-        return this.svc.getBalance(tenantId, employeeId);
+    getBalance(user, employeeId) {
+        return this.svc.getBalance(user.tenantId, employeeId, user);
     }
     getHolidays(tenantId, year) {
         return this.svc.getHolidays(tenantId, year ? parseInt(year) : undefined);
@@ -108,24 +108,24 @@ __decorate([
     (0, common_1.Put)('requests/:id/approve'),
     (0, permissions_decorator_1.RequirePermissions)('leaves:approve'),
     (0, swagger_1.ApiOperation)({ summary: 'Approve leave' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, decorators_1.CurrentUser)('id')),
     __param(2, (0, common_1.Param)('id')),
     __param(3, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Object]),
+    __metadata("design:paramtypes", [Object, String, String, Object]),
     __metadata("design:returntype", void 0)
 ], LeaveController.prototype, "approve", null);
 __decorate([
     (0, common_1.Put)('requests/:id/reject'),
     (0, permissions_decorator_1.RequirePermissions)('leaves:approve'),
     (0, swagger_1.ApiOperation)({ summary: 'Reject leave' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, decorators_1.CurrentUser)('id')),
     __param(2, (0, common_1.Param)('id')),
     __param(3, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Object]),
+    __metadata("design:paramtypes", [Object, String, String, Object]),
     __metadata("design:returntype", void 0)
 ], LeaveController.prototype, "reject", null);
 __decorate([
@@ -143,10 +143,10 @@ __decorate([
     (0, common_1.Get)('balance/:employeeId'),
     (0, permissions_decorator_1.RequirePermissions)('leaves:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get leave balance' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('employeeId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], LeaveController.prototype, "getBalance", null);
 __decorate([

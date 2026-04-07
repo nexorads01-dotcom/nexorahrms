@@ -72,10 +72,18 @@ __decorate([
     __metadata("design:type", String)
 ], RegisterDto.prototype, "currency", void 0);
 class LoginDto {
+    subdomain;
     email;
     password;
 }
 exports.LoginDto = LoginDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'acme' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(2),
+    (0, class_validator_1.Matches)(/^[a-z0-9-]+$/, { message: 'Subdomain must be lowercase alphanumeric with hyphens' }),
+    __metadata("design:type", String)
+], LoginDto.prototype, "subdomain", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 'admin@acme.com' }),
     (0, class_validator_1.IsEmail)(),

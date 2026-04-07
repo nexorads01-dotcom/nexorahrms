@@ -9,6 +9,7 @@ export declare class RegisterDto {
     currency?: string;
 }
 export declare class LoginDto {
+    subdomain: string;
     email: string;
     password: string;
 }

@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, LoginDto, ChangePasswordDto } from './dto/auth.dto';
 import { seedSystemRoles, assignRoleToUser } from '../roles/seeds/seed-roles';
 import { PermissionsService } from '../roles/permissions.service';
+import { requireEnv } from '../../config/env';
 
 @Injectable()
 export class AuthService {
@@ -130,8 +131,10 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
+    const subdomain = dto.subdomain?.trim().toLowerCase();
+    const email = dto.email?.trim().toLowerCase();
     const user = await this.prisma.user.findFirst({
-      where: { email: dto.email },
+      where: { email, tenant: { subdomain } },
       include: { tenant: true, employee: { select: { id: true, firstName: true, lastName: true } } },
     });
 
@@ -181,7 +184,7 @@ export class AuthService {
   async refreshTokens(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET || 'nexora-refresh-secret-dev-2026',
+        secret: requireEnv('JWT_REFRESH_SECRET'),
       });
 
       const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
@@ -250,12 +253,12 @@ export class AuthService {
     const payload = { sub: userId, email, role, tenantId };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET || 'nexora-jwt-secret-dev-2026',
+      secret: requireEnv('JWT_SECRET'),
       expiresIn: '15m',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET || 'nexora-refresh-secret-dev-2026',
+      secret: requireEnv('JWT_REFRESH_SECRET'),
       expiresIn: '7d',
     });
 

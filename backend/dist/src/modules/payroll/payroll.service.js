@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PayrollService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../prisma/prisma.service");
+const data_scope_util_1 = require("../roles/data-scope.util");
 let PayrollService = class PayrollService {
     prisma;
     constructor(prisma) {
@@ -78,9 +79,11 @@ let PayrollService = class PayrollService {
             throw new common_1.NotFoundException('Payroll run not found');
         return run;
     }
-    async getPayslip(tenantId, payslipId) {
+    async getPayslip(user, payslipId) {
+        const scope = user.dataScopes?.['payroll'] || 'self';
+        const filter = (0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'employeeId' });
         const payslip = await this.prisma.payslip.findFirst({
-            where: { id: payslipId, tenantId },
+            where: { id: payslipId, tenantId: user.tenantId, ...filter },
             include: { employee: { include: { department: { select: { name: true } }, designation: { select: { name: true } } } }, payrollRun: true },
         });
         if (!payslip)

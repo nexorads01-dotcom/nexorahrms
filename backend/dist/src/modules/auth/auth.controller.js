@@ -52,7 +52,7 @@ __decorate([
 __decorate([
     (0, decorators_1.Public)(),
     (0, common_1.Post)('login'),
-    (0, swagger_1.ApiOperation)({ summary: 'Login with email & password' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Login with workspace subdomain, email & password' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [auth_dto_1.LoginDto]),

@@ -44,6 +44,12 @@ export class RegisterDto {
 }
 
 export class LoginDto {
+  @ApiProperty({ example: 'acme' })
+  @IsString()
+  @MinLength(2)
+  @Matches(/^[a-z0-9-]+$/, { message: 'Subdomain must be lowercase alphanumeric with hyphens' })
+  subdomain: string;
+
   @ApiProperty({ example: 'admin@acme.com' })
   @IsEmail()
   email: string;

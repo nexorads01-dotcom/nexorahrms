@@ -128,7 +128,7 @@ export declare class LeaveController {
         reviewedAt: Date | null;
         reviewComment: string | null;
     })[]>;
-    approve(tenantId: string, userId: string, id: string, body: {
+    approve(user: any, userId: string, id: string, body: {
         comment?: string;
     }): Promise<{
         id: string;
@@ -146,7 +146,7 @@ export declare class LeaveController {
         reviewedAt: Date | null;
         reviewComment: string | null;
     }>;
-    reject(tenantId: string, userId: string, id: string, body: {
+    reject(user: any, userId: string, id: string, body: {
         comment?: string;
     }): Promise<{
         id: string;
@@ -180,7 +180,7 @@ export declare class LeaveController {
         reviewedAt: Date | null;
         reviewComment: string | null;
     }>;
-    getBalance(tenantId: string, employeeId: string): Promise<{
+    getBalance(user: any, employeeId: string): Promise<{
         leaveTypeId: string;
         leaveType: string;
         code: string;

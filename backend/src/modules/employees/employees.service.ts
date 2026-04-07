@@ -9,6 +9,24 @@ import { buildScopeFilter } from '../roles/data-scope.util';
 export class EmployeesService {
   constructor(private prisma: PrismaService) {}
 
+  private async ensureTenantRelation(
+    tenantId: string,
+    model: 'department' | 'designation' | 'employee' | 'salaryStructure' | 'shift',
+    id: string,
+    label: string,
+  ) {
+    const exists = await (this.prisma as any)[model].findFirst({ where: { id, tenantId }, select: { id: true } });
+    if (!exists) throw new BadRequestException(`${label} is invalid for this tenant`);
+  }
+
+  private async validateEmployeeRelations(tenantId: string, dto: Partial<CreateEmployeeDto>) {
+    if (dto.departmentId) await this.ensureTenantRelation(tenantId, 'department', dto.departmentId, 'departmentId');
+    if (dto.designationId) await this.ensureTenantRelation(tenantId, 'designation', dto.designationId, 'designationId');
+    if (dto.reportingManagerId) await this.ensureTenantRelation(tenantId, 'employee', dto.reportingManagerId, 'reportingManagerId');
+    if (dto.salaryStructureId) await this.ensureTenantRelation(tenantId, 'salaryStructure', dto.salaryStructureId, 'salaryStructureId');
+    if (dto.shiftId) await this.ensureTenantRelation(tenantId, 'shift', dto.shiftId, 'shiftId');
+  }
+
   async findAll(user: any, query: EmployeeQueryDto) {
     const { page = 1, limit = 20, sort = 'createdAt', order = 'desc', search, departmentId, status, employmentType } = query;
     const skip = (page - 1) * limit;
@@ -51,9 +69,11 @@ export class EmployeesService {
     };
   }
 
-  async findOne(tenantId: string, id: string) {
+  async findOne(user: any, id: string) {
+    const scope = user.dataScopes?.['employees'] || 'self';
+    const baseWhere = buildScopeFilter(scope, user, { employeeField: 'id' });
     const employee = await this.prisma.employee.findFirst({
-      where: { id, tenantId },
+      where: { ...baseWhere, id, tenantId: user.tenantId },
       include: {
         department: true,
         designation: true,
@@ -166,6 +186,8 @@ export class EmployeesService {
     const defaultPassword = 'NewPassword123!';
     const passwordHash = await bcrypt.hash(defaultPassword, 12);
 
+    await this.validateEmployeeRelations(tenantId, dto);
+
     return this.prisma.employee.create({
       data: {
         tenant: { connect: { id: tenantId } },
@@ -204,8 +226,9 @@ export class EmployeesService {
     });
   }
 
-  async update(tenantId: string, id: string, dto: UpdateEmployeeDto) {
-    await this.findOne(tenantId, id);
+  async update(user: any, id: string, dto: UpdateEmployeeDto) {
+    await this.findOne(user, id);
+    await this.validateEmployeeRelations(user.tenantId, dto);
     return this.prisma.employee.update({
       where: { id },
       data: dto as any,

@@ -52,6 +52,23 @@ let EmployeesService = class EmployeesService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async ensureTenantRelation(tenantId, model, id, label) {
+        const exists = await this.prisma[model].findFirst({ where: { id, tenantId }, select: { id: true } });
+        if (!exists)
+            throw new common_1.BadRequestException(`${label} is invalid for this tenant`);
+    }
+    async validateEmployeeRelations(tenantId, dto) {
+        if (dto.departmentId)
+            await this.ensureTenantRelation(tenantId, 'department', dto.departmentId, 'departmentId');
+        if (dto.designationId)
+            await this.ensureTenantRelation(tenantId, 'designation', dto.designationId, 'designationId');
+        if (dto.reportingManagerId)
+            await this.ensureTenantRelation(tenantId, 'employee', dto.reportingManagerId, 'reportingManagerId');
+        if (dto.salaryStructureId)
+            await this.ensureTenantRelation(tenantId, 'salaryStructure', dto.salaryStructureId, 'salaryStructureId');
+        if (dto.shiftId)
+            await this.ensureTenantRelation(tenantId, 'shift', dto.shiftId, 'shiftId');
+    }
     async findAll(user, query) {
         const { page = 1, limit = 20, sort = 'createdAt', order = 'desc', search, departmentId, status, employmentType } = query;
         const skip = (page - 1) * limit;
@@ -92,9 +109,11 @@ let EmployeesService = class EmployeesService {
             meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
         };
     }
-    async findOne(tenantId, id) {
+    async findOne(user, id) {
+        const scope = user.dataScopes?.['employees'] || 'self';
+        const baseWhere = (0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'id' });
         const employee = await this.prisma.employee.findFirst({
-            where: { id, tenantId },
+            where: { ...baseWhere, id, tenantId: user.tenantId },
             include: {
                 department: true,
                 designation: true,
@@ -188,6 +207,7 @@ let EmployeesService = class EmployeesService {
         const employeeCode = `NEX-${nextCode.toString().padStart(4, '0')}`;
         const defaultPassword = 'NewPassword123!';
         const passwordHash = await bcrypt.hash(defaultPassword, 12);
+        await this.validateEmployeeRelations(tenantId, dto);
         return this.prisma.employee.create({
             data: {
                 tenant: { connect: { id: tenantId } },
@@ -225,8 +245,9 @@ let EmployeesService = class EmployeesService {
             include: { department: { select: { name: true } }, designation: { select: { name: true } } },
         });
     }
-    async update(tenantId, id, dto) {
-        await this.findOne(tenantId, id);
+    async update(user, id, dto) {
+        await this.findOne(user, id);
+        await this.validateEmployeeRelations(user.tenantId, dto);
         return this.prisma.employee.update({
             where: { id },
             data: dto,

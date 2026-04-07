@@ -1,4 +1,7 @@
+import { PrismaService } from './prisma/prisma.service';
 export declare class AppController {
+    private readonly prisma;
+    constructor(prisma: PrismaService);
     root(): {
         name: string;
         swagger: string;
@@ -14,4 +17,8 @@ export declare class AppController {
         status: string;
         timestamp: string;
     };
+    readiness(): Promise<{
+        status: string;
+        timestamp: string;
+    }>;
 }

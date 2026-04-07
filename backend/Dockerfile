@@ -38,5 +38,5 @@ COPY --from=builder /app/package*.json ./
 # Expose port
 EXPOSE 3000
 
-# Start: push schema → seed (ignore errors) → run app
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npx ts-node prisma/seed.ts 2>/dev/null; node dist/main"]
+# Start: run safe migrations, optionally seed in dev, then run app
+CMD ["sh", "-c", "npx prisma migrate deploy && if [ \"$RUN_DB_SEED\" = \"true\" ]; then npx ts-node prisma/seed.ts; fi && node dist/main"]

@@ -18,6 +18,15 @@ let LeaveService = class LeaveService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async isEmployeeInScope(user, employeeId) {
+        const scope = user.dataScopes?.['leaves'] || 'self';
+        const scopeWhere = (0, data_scope_util_1.buildScopeFilter)(scope, user, { employeeField: 'id' });
+        const employee = await this.prisma.employee.findFirst({
+            where: { tenantId: user.tenantId, id: employeeId, ...scopeWhere },
+            select: { id: true },
+        });
+        return !!employee;
+    }
     async getLeaveTypes(tenantId) {
         return this.prisma.leaveType.findMany({ where: { tenantId, isActive: true }, include: { policies: true } });
     }
@@ -29,6 +38,12 @@ let LeaveService = class LeaveService {
         return leaveType;
     }
     async applyLeave(tenantId, employeeId, data) {
+        const employee = await this.prisma.employee.findFirst({ where: { id: employeeId, tenantId, status: 'active' }, select: { id: true } });
+        if (!employee)
+            throw new common_1.BadRequestException('Employee is invalid or inactive');
+        const leaveType = await this.prisma.leaveType.findFirst({ where: { id: data.leaveTypeId, tenantId, isActive: true }, select: { id: true } });
+        if (!leaveType)
+            throw new common_1.BadRequestException('Leave type is invalid for this tenant');
         const start = new Date(data.startDate);
         const end = new Date(data.endDate);
         if (end < start)
@@ -50,8 +65,12 @@ let LeaveService = class LeaveService {
         const where = { ...filter, tenantId: user.tenantId };
         if (filters?.status)
             where.status = filters.status;
-        if (filters?.employeeId)
+        if (filters?.employeeId) {
+            const allowed = await this.isEmployeeInScope(user, filters.employeeId);
+            if (!allowed)
+                throw new common_1.BadRequestException('Requested employee is outside your data scope');
             where.employeeId = filters.employeeId;
+        }
         return this.prisma.leaveRequest.findMany({
             where,
             include: {
@@ -61,23 +80,29 @@ let LeaveService = class LeaveService {
             orderBy: { createdAt: 'desc' },
         });
     }
-    async approveLeave(tenantId, requestId, reviewedBy, comment) {
-        const request = await this.prisma.leaveRequest.findFirst({ where: { id: requestId, tenantId } });
+    async approveLeave(user, requestId, reviewedBy, comment) {
+        const request = await this.prisma.leaveRequest.findFirst({ where: { id: requestId, tenantId: user.tenantId } });
         if (!request)
             throw new common_1.NotFoundException('Leave request not found');
         if (request.status !== 'pending')
             throw new common_1.BadRequestException('Can only approve pending requests');
+        const allowed = await this.isEmployeeInScope(user, request.employeeId);
+        if (!allowed)
+            throw new common_1.BadRequestException('Leave request is outside your data scope');
         return this.prisma.leaveRequest.update({
             where: { id: requestId },
             data: { status: 'approved', reviewedBy, reviewedAt: new Date(), reviewComment: comment },
         });
     }
-    async rejectLeave(tenantId, requestId, reviewedBy, comment) {
-        const request = await this.prisma.leaveRequest.findFirst({ where: { id: requestId, tenantId } });
+    async rejectLeave(user, requestId, reviewedBy, comment) {
+        const request = await this.prisma.leaveRequest.findFirst({ where: { id: requestId, tenantId: user.tenantId } });
         if (!request)
             throw new common_1.NotFoundException('Leave request not found');
         if (request.status !== 'pending')
             throw new common_1.BadRequestException('Can only reject pending requests');
+        const allowed = await this.isEmployeeInScope(user, request.employeeId);
+        if (!allowed)
+            throw new common_1.BadRequestException('Leave request is outside your data scope');
         return this.prisma.leaveRequest.update({
             where: { id: requestId },
             data: { status: 'rejected', reviewedBy, reviewedAt: new Date(), reviewComment: comment },
@@ -91,7 +116,12 @@ let LeaveService = class LeaveService {
             throw new common_1.BadRequestException('Can only cancel pending requests');
         return this.prisma.leaveRequest.update({ where: { id: requestId }, data: { status: 'cancelled' } });
     }
-    async getBalance(tenantId, employeeId) {
+    async getBalance(tenantId, employeeId, user) {
+        if (user) {
+            const allowed = await this.isEmployeeInScope(user, employeeId);
+            if (!allowed)
+                throw new common_1.BadRequestException('Requested employee is outside your data scope');
+        }
         const policies = await this.prisma.leavePolicy.findMany({
             where: { tenantId },
             include: { leaveType: true },

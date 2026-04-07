@@ -33,14 +33,14 @@ let EmployeesController = class EmployeesController {
     getStats(tenantId) {
         return this.employeesService.getStats(tenantId);
     }
-    findOne(tenantId, id) {
-        return this.employeesService.findOne(tenantId, id);
+    findOne(user, id) {
+        return this.employeesService.findOne(user, id);
     }
     create(tenantId, dto) {
         return this.employeesService.create(tenantId, dto);
     }
-    update(tenantId, id, dto) {
-        return this.employeesService.update(tenantId, id, dto);
+    update(user, id, dto) {
+        return this.employeesService.update(user, id, dto);
     }
     remove(tenantId, id) {
         return this.employeesService.remove(tenantId, id);
@@ -84,10 +84,10 @@ __decorate([
     (0, common_1.Get)(':id'),
     (0, permissions_decorator_1.RequirePermissions)('employees:view'),
     (0, swagger_1.ApiOperation)({ summary: 'Get employee by ID' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "findOne", null);
 __decorate([
@@ -104,11 +104,11 @@ __decorate([
     (0, common_1.Put)(':id'),
     (0, permissions_decorator_1.RequirePermissions)('employees:edit_all'),
     (0, swagger_1.ApiOperation)({ summary: 'Update employee' }),
-    __param(0, (0, decorators_1.CurrentUser)('tenantId')),
+    __param(0, (0, decorators_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, employee_dto_1.UpdateEmployeeDto]),
+    __metadata("design:paramtypes", [Object, String, employee_dto_1.UpdateEmployeeDto]),
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "update", null);
 __decorate([

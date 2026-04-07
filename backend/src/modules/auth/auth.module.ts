@@ -5,13 +5,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesModule } from '../roles/roles.module';
+import { requireEnv } from '../../config/env';
 
 @Module({
   imports: [
     RolesModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'nexora-jwt-secret-dev-2026',
+      secret: requireEnv('JWT_SECRET'),
       signOptions: { expiresIn: '15m' },
     }),
   ],

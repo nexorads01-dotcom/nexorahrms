@@ -15,6 +15,7 @@ const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const prisma_service_1 = require("../../prisma/prisma.service");
 const permissions_service_1 = require("../roles/permissions.service");
+const env_1 = require("../../config/env");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     prisma;
     permissionsService;
@@ -22,7 +23,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET || 'nexora-jwt-secret-dev-2026',
+            secretOrKey: (0, env_1.requireEnv)('JWT_SECRET'),
         });
         this.prisma = prisma;
         this.permissionsService = permissionsService;

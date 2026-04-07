@@ -30,7 +30,7 @@ export class PayrollController {
   getRunDetail(@CurrentUser('tenantId') tenantId: string, @Param('id') id: string) { return this.svc.getRunDetail(tenantId, id); }
 
   @Get('payslips/:id') @RequirePermissions('payroll:view') @ApiOperation({ summary: 'Get payslip detail' })
-  getPayslip(@CurrentUser('tenantId') tenantId: string, @Param('id') id: string) { return this.svc.getPayslip(tenantId, id); }
+  getPayslip(@CurrentUser() user: any, @Param('id') id: string) { return this.svc.getPayslip(user, id); }
 
   @Get('my-payslips') @RequirePermissions('payroll:view') @ApiOperation({ summary: 'Get my payslips' })
   getMyPayslips(@CurrentUser('tenantId') tenantId: string, @CurrentUser('employeeId') employeeId: string) {

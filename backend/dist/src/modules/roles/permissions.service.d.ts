@@ -2,6 +2,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 export declare class PermissionsService {
     private readonly prisma;
     private readonly logger;
+    private redisPub;
+    private redisSub;
+    private readonly redisChannel;
     private readonly CACHE_TTL_MS;
     private readonly SWR_TTL_MS;
     private permissionCache;
@@ -9,6 +12,7 @@ export declare class PermissionsService {
     private stats;
     constructor(prisma: PrismaService);
     onModuleInit(): Promise<void>;
+    private initDistributedInvalidation;
     invalidateCache(userId: string): void;
     invalidateAllCache(): void;
     private getScopeWeight;
