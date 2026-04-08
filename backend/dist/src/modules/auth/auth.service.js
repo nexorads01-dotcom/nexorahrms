@@ -45,19 +45,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
 const bcrypt = __importStar(require("bcryptjs"));
 const prisma_service_1 = require("../../prisma/prisma.service");
 const seed_roles_1 = require("../roles/seeds/seed-roles");
 const permissions_service_1 = require("../roles/permissions.service");
-const env_1 = require("../../config/env");
 let AuthService = class AuthService {
     prisma;
     jwtService;
     permissionsService;
-    constructor(prisma, jwtService, permissionsService) {
+    configService;
+    constructor(prisma, jwtService, permissionsService, configService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
         this.permissionsService = permissionsService;
+        this.configService = configService;
     }
     async register(dto) {
         const existing = await this.prisma.tenant.findUnique({ where: { subdomain: dto.subdomain } });
@@ -192,7 +194,7 @@ let AuthService = class AuthService {
     async refreshTokens(refreshToken) {
         try {
             const payload = this.jwtService.verify(refreshToken, {
-                secret: (0, env_1.requireEnv)('JWT_REFRESH_SECRET'),
+                secret: this.configService.getOrThrow('JWT_REFRESH_SECRET'),
             });
             const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
             if (!user || !user.refreshTokenHash)
@@ -254,11 +256,11 @@ let AuthService = class AuthService {
     async generateTokens(userId, email, role, tenantId) {
         const payload = { sub: userId, email, role, tenantId };
         const accessToken = this.jwtService.sign(payload, {
-            secret: (0, env_1.requireEnv)('JWT_SECRET'),
+            secret: this.configService.getOrThrow('JWT_SECRET'),
             expiresIn: '15m',
         });
         const refreshToken = this.jwtService.sign(payload, {
-            secret: (0, env_1.requireEnv)('JWT_REFRESH_SECRET'),
+            secret: this.configService.getOrThrow('JWT_REFRESH_SECRET'),
             expiresIn: '7d',
         });
         return { accessToken, refreshToken, expiresIn: 900 };
@@ -269,6 +271,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService,
-        permissions_service_1.PermissionsService])
+        permissions_service_1.PermissionsService,
+        config_1.ConfigService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

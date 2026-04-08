@@ -1,4 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, LoginDto, ChangePasswordDto } from './dto/auth.dto';
 import { PermissionsService } from '../roles/permissions.service';
@@ -6,7 +7,8 @@ export declare class AuthService {
     private prisma;
     private jwtService;
     private permissionsService;
-    constructor(prisma: PrismaService, jwtService: JwtService, permissionsService: PermissionsService);
+    private configService;
+    constructor(prisma: PrismaService, jwtService: JwtService, permissionsService: PermissionsService, configService: ConfigService);
     register(dto: RegisterDto): Promise<{
         tenant: {
             id: string;

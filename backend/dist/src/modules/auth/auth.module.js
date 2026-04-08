@@ -10,11 +10,11 @@ exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
+const config_1 = require("@nestjs/config");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
 const jwt_strategy_1 = require("./jwt.strategy");
 const roles_module_1 = require("../roles/roles.module");
-const env_1 = require("../../config/env");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -23,9 +23,13 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             roles_module_1.RolesModule,
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
-            jwt_1.JwtModule.register({
-                secret: (0, env_1.requireEnv)('JWT_SECRET'),
-                signOptions: { expiresIn: '15m' },
+            jwt_1.JwtModule.registerAsync({
+                imports: [config_1.ConfigModule],
+                inject: [config_1.ConfigService],
+                useFactory: (config) => ({
+                    secret: config.getOrThrow('JWT_SECRET'),
+                    signOptions: { expiresIn: '15m' },
+                }),
             }),
         ],
         controllers: [auth_controller_1.AuthController],

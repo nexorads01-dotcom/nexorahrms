@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
@@ -7,14 +8,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, LoginDto, ChangePasswordDto } from './dto/auth.dto';
 import { seedSystemRoles, assignRoleToUser } from '../roles/seeds/seed-roles';
 import { PermissionsService } from '../roles/permissions.service';
-import { requireEnv } from '../../config/env';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private permissionsService: PermissionsService
+    private permissionsService: PermissionsService,
+    private configService: ConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -184,7 +185,7 @@ export class AuthService {
   async refreshTokens(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: requireEnv('JWT_REFRESH_SECRET'),
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       });
 
       const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
@@ -253,12 +254,12 @@ export class AuthService {
     const payload = { sub: userId, email, role, tenantId };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: requireEnv('JWT_SECRET'),
+      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
       expiresIn: '15m',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: requireEnv('JWT_REFRESH_SECRET'),
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       expiresIn: '7d',
     });
 

@@ -18,13 +18,13 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-nexora_hrms}
       POSTGRES_USER: ${POSTGRES_USER:-nexora_admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-NexoraDB@2026!}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nexora_admin -d nexora_hrms"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexora_admin} -d ${POSTGRES_DB:-nexora_hrms}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -38,7 +38,7 @@ services:
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@nexora.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Set PGADMIN_DEFAULT_PASSWORD in .env}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
       PGADMIN_CONFIG_SERVER_MODE: "False"
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
@@ -59,9 +59,9 @@ services:
     container_name: nexora-backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET in .env}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://nexora_admin:NexoraDB@2026!@postgres:5432/nexora_hrms?schema=public}
+      JWT_SECRET: ${JWT_SECRET:-nexora-jwt-secret-docker-2026}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-nexora-refresh-secret-docker-2026}
       PORT: "3000"
       NODE_ENV: "production"
       RUN_DB_SEED: ${RUN_DB_SEED:-false}

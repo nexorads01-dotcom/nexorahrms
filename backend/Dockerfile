@@ -10,7 +10,8 @@ WORKDIR /app
 
 # Install dependencies first (better caching)
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+RUN npm install prisma@^7.6.0 --no-save --ignore-scripts --no-audit --no-fund
 
 # Copy prisma schema and generate client
 COPY prisma ./prisma/
