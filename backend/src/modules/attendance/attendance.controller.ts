@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Query, Param, Req } from '@nestjs/common';
+import { Controller, Post, Get, Query, Param, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
 import { CurrentUser, Roles } from '../../common/decorators';
@@ -29,6 +29,43 @@ export class AttendanceController {
     return this.svc.getEmployeeAttendance(tenantId, employeeId, from, to);
   }
 
+  // ======== DATE-RANGE REPORT (must be before @Get('report') to avoid route conflict) ========
+
+  @Get('report/range')
+  @RequirePermissions('attendance:view_all')
+  @ApiOperation({ summary: 'Attendance report for a date range with filters' })
+  getDateRangeReport(
+    @CurrentUser() user: any,
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('employeeId') employeeId?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.svc.getDateRangeReport(user, from, to, { departmentId, employeeId, status });
+  }
+
+  @Get('report/range/csv')
+  @RequirePermissions('attendance:export')
+  @ApiOperation({ summary: 'Export date-range attendance report as CSV' })
+  async getDateRangeReportCsv(
+    @CurrentUser() user: any,
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('employeeId') employeeId?: string,
+    @Query('status') status?: string,
+    @Res() res?: any,
+  ) {
+    const csv = await this.svc.getDateRangeReportCsv(user, from, to, { departmentId, employeeId, status });
+    res!.setHeader('Content-Type', 'text/csv');
+    res!.setHeader('Content-Disposition', `attachment; filename="attendance_report_${from}_to_${to}.csv"`);
+    res!.send(csv);
+  }
+
+  // ======== SINGLE-DATE REPORT ========
+
   @Get('report') @RequirePermissions('attendance:view_all') @ApiOperation({ summary: 'Attendance report for a date' })
   getReport(@CurrentUser() user: any, @Query('date') date: string) { return this.svc.getReport(user, date); }
 }
+

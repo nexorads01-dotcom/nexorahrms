@@ -33,6 +33,15 @@ let AttendanceController = class AttendanceController {
     getMyAttendance(tenantId, employeeId, from, to) {
         return this.svc.getEmployeeAttendance(tenantId, employeeId, from, to);
     }
+    getDateRangeReport(user, from, to, departmentId, employeeId, status) {
+        return this.svc.getDateRangeReport(user, from, to, { departmentId, employeeId, status });
+    }
+    async getDateRangeReportCsv(user, from, to, departmentId, employeeId, status, res) {
+        const csv = await this.svc.getDateRangeReportCsv(user, from, to, { departmentId, employeeId, status });
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="attendance_report_${from}_to_${to}.csv"`);
+        res.send(csv);
+    }
     getReport(user, date) { return this.svc.getReport(user, date); }
 };
 exports.AttendanceController = AttendanceController;
@@ -78,6 +87,35 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AttendanceController.prototype, "getMyAttendance", null);
+__decorate([
+    (0, common_1.Get)('report/range'),
+    (0, permissions_decorator_1.RequirePermissions)('attendance:view_all'),
+    (0, swagger_1.ApiOperation)({ summary: 'Attendance report for a date range with filters' }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('from')),
+    __param(2, (0, common_1.Query)('to')),
+    __param(3, (0, common_1.Query)('departmentId')),
+    __param(4, (0, common_1.Query)('employeeId')),
+    __param(5, (0, common_1.Query)('status')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String]),
+    __metadata("design:returntype", void 0)
+], AttendanceController.prototype, "getDateRangeReport", null);
+__decorate([
+    (0, common_1.Get)('report/range/csv'),
+    (0, permissions_decorator_1.RequirePermissions)('attendance:export'),
+    (0, swagger_1.ApiOperation)({ summary: 'Export date-range attendance report as CSV' }),
+    __param(0, (0, decorators_1.CurrentUser)()),
+    __param(1, (0, common_1.Query)('from')),
+    __param(2, (0, common_1.Query)('to')),
+    __param(3, (0, common_1.Query)('departmentId')),
+    __param(4, (0, common_1.Query)('employeeId')),
+    __param(5, (0, common_1.Query)('status')),
+    __param(6, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String, Object]),
+    __metadata("design:returntype", Promise)
+], AttendanceController.prototype, "getDateRangeReportCsv", null);
 __decorate([
     (0, common_1.Get)('report'),
     (0, permissions_decorator_1.RequirePermissions)('attendance:view_all'),
